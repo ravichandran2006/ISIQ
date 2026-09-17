@@ -467,6 +467,146 @@ SEED_STANDARDS = [
             "safety_justification": "Mandatory CRS (Compulsory Registration Scheme) standard for all computers, laptops, and IT servers against fire and electric shock.",
             "testing_methods_summary": "Input power test, insulation resistance, electric strength test, fault condition simulation, temperature measurements."
         }
+    },
+
+    # --- CABLE TRAYS, CONDUITS & STRUCTURAL STEEL (STANDIQ PROCUREMENT SPEC) ---
+    {
+        "standard_number": "IS 1239:2018",
+        "title": "Stainless Steel Wire and Wire Products - Specification",
+        "publication_year": 2018,
+        "reaffirmed_year": 2023,
+        "ics_code": "77.140.65",
+        "committee_code": "MTD 4",
+        "domain": "Mechanical and Metallurgy",
+        "status": "Active",
+        "is_mandatory": True,
+        "scope": "This standard specifies the requirements for stainless steel wire and wire products used in industrial cable trays, electrical cable support systems, wiring enclosures, and structural fittings under corrosive environments.",
+        "preview_url": "https://standardsbis.bsbedge.com/BIS_Preview.aspx?id=1239_2018",
+        "source_url": "https://standardsbis.bsbedge.com/BIS_searchstandard.aspx?keyword=1239&id=0",
+        "references": [
+            {"standard_number": "IS 8082:2021", "year": 2021, "title": "Electroplated Coatings of Zinc on Iron & Steel", "reference_type": "normative"},
+            {"standard_number": "IS 2629:1985", "year": 1985, "title": "Recommended Practice for Hot Dip Galvanizing", "reference_type": "normative"},
+            {"standard_number": "IS 1448:2018", "year": 2018, "title": "General Requirements for Cable Management Systems", "reference_type": "normative"},
+            {"standard_number": "IS 15669:2008", "year": 2008, "title": "Cable Trays, Cable Ladders and Accessories", "reference_type": "normative"},
+            {"standard_number": "IS 2102:1999", "year": 1999, "title": "Safety of Machinery - General Principles", "reference_type": "allied"},
+            {"standard_number": "IS 732:1993", "year": 1993, "title": "Code of Practice for Electrical Wiring Installations", "reference_type": "allied"},
+            {"standard_number": "IS 12894:2002", "year": 2002, "title": "Methods of Test for Coatings on Iron & Steel", "reference_type": "allied"},
+            {"standard_number": "IS 4687:2000", "year": 2000, "title": "Hot Dip Galvanized (Zinc) Coated Steel Wires", "reference_type": "allied"}
+        ],
+        "amendments": [
+            {"amendment_number": "Amendment No. 1", "amendment_year": 2022, "publication_date": "15 Aug 2022", "title": "Amendment No. 1 to IS 1239 (Corrosion Resistance Limits)", "status": "Active"},
+            {"amendment_number": "Amendment No. 2", "amendment_year": 2024, "publication_date": "10 Jan 2024", "title": "Amendment No. 2 to IS 1239 (Tolerance Specification)", "status": "Active"}
+        ],
+        "safety_testing": {
+            "is_safety_related": True,
+            "is_testing_related": True,
+            "is_sampling_related": True,
+            "is_quality_spec": True,
+            "safety_justification": "Prescribes tensile strength, proof stress, corrosion resistance in saline/acidic atmosphere, and earthing continuity for cable management trays.",
+            "testing_methods_summary": "Tensile testing, bend test, intergranular corrosion resistance test (IGC test), coating thickness measurement."
+        }
+    },
+    {
+        "standard_number": "IS 1248:2021",
+        "title": "Stainless Steel Sheets, Plates and Strips for Engineering Applications",
+        "publication_year": 2021,
+        "reaffirmed_year": 2024,
+        "ics_code": "77.140.20",
+        "committee_code": "MTD 22",
+        "domain": "Mechanical and Metallurgy",
+        "status": "Active",
+        "is_mandatory": True,
+        "scope": "Prescribes requirements for hot-rolled and cold-rolled stainless steel sheets, plates, and strip intended for fabrication of perforated cable trays, industrial enclosures, and electrical raceways.",
+        "preview_url": "https://standardsbis.bsbedge.com/BIS_Preview.aspx?id=1248_2021",
+        "source_url": "https://standardsbis.bsbedge.com/BIS_searchstandard.aspx?keyword=1248&id=0",
+        "references": [
+            {"standard_number": "IS 2102:1999", "year": 1999, "title": "General tolerances for dimensions", "reference_type": "normative"},
+            {"standard_number": "IS 732:1993", "year": 1993, "title": "Code of Practice for Electrical Wiring Installations", "reference_type": "normative"}
+        ],
+        "safety_testing": {
+            "is_safety_related": True,
+            "is_testing_related": True,
+            "is_sampling_related": True,
+            "is_quality_spec": True,
+            "safety_justification": "Ensures material grade compliance (AISI 304 / 316), minimum yield strength, and flame/fire resistance.",
+            "testing_methods_summary": "Chemical composition analysis, Rockwell/Brinell hardness, elongation test, surface roughness."
+        }
+    },
+    {
+        "standard_number": "IS 4759:2016",
+        "title": "Perforated Cable Trays and Cable Ladders - Specification",
+        "publication_year": 2016,
+        "reaffirmed_year": 2022,
+        "ics_code": "29.120.10",
+        "committee_code": "ETD 14",
+        "domain": "Electrical Engineering",
+        "status": "Active",
+        "is_mandatory": True,
+        "scope": "Specifies design dimensions, perforation patterns, safe working load (SWL), deflection limits, and safety earthing requirements for metallic perforated cable trays and ladders.",
+        "preview_url": "https://standardsbis.bsbedge.com/BIS_Preview.aspx?id=4759_2016",
+        "source_url": "https://standardsbis.bsbedge.com/BIS_searchstandard.aspx?keyword=4759&id=0",
+        "references": [
+            {"standard_number": "IS 15669:2008", "year": 2008, "title": "Cable Trays, Cable Ladders and Accessories", "reference_type": "normative"},
+            {"standard_number": "IS 2629:1985", "year": 1985, "title": "Hot Dip Galvanizing Practice", "reference_type": "normative"}
+        ],
+        "safety_testing": {
+            "is_safety_related": True,
+            "is_testing_related": True,
+            "is_sampling_related": True,
+            "is_quality_spec": True,
+            "safety_justification": "Prescribes structural load capacity, impact resistance, and continuous electrical bonding to prevent electric shock hazards in industrial cabling.",
+            "testing_methods_summary": "Safe working load (SWL) deflection test, electrical continuity test, flame retardancy test."
+        }
+    },
+    {
+        "standard_number": "IS 2062:2011",
+        "title": "Hot Rolled Medium and High Tensile Structural Steel",
+        "publication_year": 2011,
+        "reaffirmed_year": 2021,
+        "ics_code": "77.140.01",
+        "committee_code": "MTD 4",
+        "domain": "Mechanical and Civil",
+        "status": "Active",
+        "is_mandatory": True,
+        "scope": "Covers requirements of steel including micro-alloyed steel plates, shapes, sections, and flats for use in structural support fabrications, brackets, and heavy duty industrial cable tray supports.",
+        "preview_url": "https://standardsbis.bsbedge.com/BIS_Preview.aspx?id=2062_2011",
+        "source_url": "https://standardsbis.bsbedge.com/BIS_searchstandard.aspx?keyword=2062&id=0",
+        "references": [
+            {"standard_number": "IS 1608", "year": 2005, "title": "Metallic materials - Tensile testing at ambient temperature", "reference_type": "normative"}
+        ],
+        "safety_testing": {
+            "is_safety_related": True,
+            "is_testing_related": True,
+            "is_sampling_related": True,
+            "is_quality_spec": True,
+            "safety_justification": "Guarantees yield strength, Charpy impact toughness, and weldability under structural load conditions.",
+            "testing_methods_summary": "Tensile testing, Charpy V-notch impact test, bend test."
+        }
+    },
+    {
+        "standard_number": "IS 277:2003",
+        "title": "Mild Steel and Medium Tensile Steel Bars and Sections / Galvanized Sheets",
+        "publication_year": 2003,
+        "reaffirmed_year": 2020,
+        "ics_code": "77.140.50",
+        "committee_code": "MTD 4",
+        "domain": "Mechanical and Metallurgy",
+        "status": "Active",
+        "is_mandatory": True,
+        "scope": "Specifies galvanized steel sheets, plain and corrugated, and mild steel structural sections used for tray covers, dividers, couplers, and corrosion-resistant cable management accessories.",
+        "preview_url": "https://standardsbis.bsbedge.com/BIS_Preview.aspx?id=277_2003",
+        "source_url": "https://standardsbis.bsbedge.com/BIS_searchstandard.aspx?keyword=277&id=0",
+        "references": [
+            {"standard_number": "IS 6745", "year": 1972, "title": "Methods for determination of mass of zinc coating", "reference_type": "normative"}
+        ],
+        "safety_testing": {
+            "is_safety_related": True,
+            "is_testing_related": True,
+            "is_sampling_related": True,
+            "is_quality_spec": True,
+            "safety_justification": "Zinc coating adhesion and mass verification to ensure corrosion barrier and prevent degradation.",
+            "testing_methods_summary": "Coating mass test, triple spot test, bend test."
+        }
     }
 ]
 

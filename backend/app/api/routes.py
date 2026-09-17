@@ -1,7 +1,8 @@
-import time
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
 from sqlalchemy.orm import Session
+import io
+import pypdf
 
 from backend.app.database.connection import get_db
 from backend.app.database.models import Standard, StandardReference, Amendment, IngestionLog
@@ -162,4 +163,35 @@ def run_evaluation_benchmark(db: Session = Depends(get_db)):
     from backend.app.evaluation.benchmark import BenchmarkEvaluator
     evaluator = BenchmarkEvaluator(db)
     return evaluator.run_benchmark()
+
+@router.post("/upload-document", tags=["Ingestion"])
+async def upload_document(file: UploadFile = File(...)):
+    filename = file.filename or "uploaded_document"
+    contents = await file.read()
+    text = ""
+    page_count = 1
+    
+    if filename.lower().endswith(".pdf"):
+        try:
+            reader = pypdf.PdfReader(io.BytesIO(contents))
+            page_count = len(reader.pages)
+            for page in reader.pages:
+                extracted = page.extract_text()
+                if extracted:
+                    text += extracted + "\n"
+        except Exception as e:
+            text = f"Error reading PDF: {str(e)}"
+    else:
+        try:
+            text = contents.decode("utf-8", errors="ignore")
+        except Exception as e:
+            text = str(contents)
+            
+    return {
+        "filename": filename,
+        "size_bytes": len(contents),
+        "page_count": page_count,
+        "extracted_text": text.strip()
+    }
+
 

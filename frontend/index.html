@@ -1,145 +1,1163 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI-Powered Indian Standards Discovery & Recommendation Engine | SIH26108</title>
-    <meta name="description" content="AI recommendation system for discovering applicable Bureau of Indian Standards (BIS/IS) for government tenders and procurement specifications.">
+    <title>StandIQ — Right Standards. Right Tenders. | Bureau of Indian Standards Discovery Engine</title>
+    <meta name="description" content="AI-Powered Indian Standards Discovery & Recommendation Engine for Government Procurement and GeM Tenders.">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Custom CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- StandIQ Custom Stylesheet -->
     <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-    <div class="app-container">
-        <!-- Top Navbar -->
-        <header class="navbar">
-            <div class="nav-left">
-                <div class="brand-logo">
-                    <i class="fa-solid fa-scale-balanced logo-icon"></i>
-                    <div>
-                        <div class="brand-title">BIS ManakAI <span class="badge-sih">SIH26108</span></div>
-                        <div class="brand-subtitle">Ministry of Consumer Affairs, Food & Public Distribution</div>
+    <div class="app-wrapper">
+        <!-- Top Navigation Bar -->
+        <header class="top-nav">
+            <div class="nav-brand-group">
+                <div class="brand-logo-container" id="nav-brand-home">
+                    <div class="brand-shield-icon">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="shield-svg">
+                            <path d="M12 2L4 5V11.5C4 16.5 7.5 21 12 22C16.5 21 20 16.5 20 11.5V5L12 2Z" fill="#1e40af" stroke="#2563eb" stroke-width="1.5"/>
+                            <path d="M9 12L11 14L15 9" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div class="brand-text">
+                        <div class="brand-title">StandIQ</div>
+                        <div class="brand-tagline">Right Standards. Right Tenders.</div>
                     </div>
                 </div>
             </div>
-            <div class="nav-right">
-                <div class="status-indicator">
-                    <span class="pulse-dot"></span>
-                    <span id="api-status-text">Backend Connected</span>
-                </div>
-                <button id="btn-run-benchmark" class="btn-secondary">
-                    <i class="fa-solid fa-chart-line"></i> IR Benchmark
+
+            <nav class="top-menu">
+                <button class="top-nav-item active" data-view="dashboard" id="topnav-dashboard">
+                    <i class="fa-solid fa-house"></i> Home
                 </button>
+                <button class="top-nav-item" data-view="search" id="topnav-search">
+                    <i class="fa-solid fa-magnifying-glass"></i> Search
+                </button>
+                <button class="top-nav-item" data-view="upload" id="topnav-upload">
+                    <i class="fa-solid fa-file-arrow-up"></i> Upload Document
+                </button>
+                <button class="top-nav-item" data-view="history" id="topnav-history">
+                    <i class="fa-solid fa-clock-rotate-left"></i> History
+                </button>
+                <button class="top-nav-item" data-view="saved" id="topnav-saved">
+                    <i class="fa-solid fa-bookmark"></i> Saved Results
+                </button>
+            </nav>
+
+            <div class="top-user-group">
+                <button class="theme-toggle-btn" id="btn-theme-toggle" title="Toggle Dark / Light Mode" aria-label="Toggle theme">
+                    <i class="fa-solid fa-moon theme-icon-moon"></i>
+                    <i class="fa-solid fa-sun theme-icon-sun hidden"></i>
+                </button>
+                <div class="profile-avatar-badge" id="btn-open-profile" title="Ravichandran M. (GeM / CPWD Senior Procurement Specialist)">
+                    <span class="avatar-initials">RM</span>
+                    <span class="avatar-shield-pip">
+                        <i class="fa-solid fa-shield-check"></i>
+                    </span>
+                </div>
             </div>
         </header>
 
-        <!-- Hero & Procurement Input Section -->
-        <main class="main-content">
-            <section class="hero-section">
-                <h1 class="hero-title">AI-Powered Indian Standards (BIS) Discovery Engine</h1>
-                <p class="hero-desc">Enter procurement specifications, tender requirements, or product descriptions in natural language. Our hybrid AI engine identifies applicable IS standards, normative references, safety clauses, and testing criteria.</p>
+        <!-- Body Layout (Sidebar + Main Viewport) -->
+        <div class="main-body-container">
+            <!-- Left Sidebar -->
+            <aside class="left-sidebar">
+                <div class="sidebar-menu">
+                    <button class="sidebar-item active" data-view="dashboard" id="side-dashboard">
+                        <i class="fa-solid fa-table-cells-large"></i>
+                        <span>Dashboard</span>
+                    </button>
+                    <button class="sidebar-item" data-view="search" id="side-search">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <span>Search Standards</span>
+                    </button>
+                    <button class="sidebar-item" data-view="upload" id="side-upload">
+                        <i class="fa-solid fa-file-arrow-up"></i>
+                        <span>Upload Document</span>
+                    </button>
+                    <button class="sidebar-item" data-view="history" id="side-history">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        <span>History</span>
+                    </button>
+                    <button class="sidebar-item" data-view="saved" id="side-saved">
+                        <i class="fa-solid fa-bookmark"></i>
+                        <span>Saved Results</span>
+                    </button>
+                    <button class="sidebar-item" data-view="alerts" id="side-alerts">
+                        <i class="fa-solid fa-bell"></i>
+                        <span>Alerts</span>
+                        <span class="notification-badge-dot"></span>
+                    </button>
+                    <button class="sidebar-item" data-view="settings" id="side-settings">
+                        <i class="fa-solid fa-gear"></i>
+                        <span>Settings</span>
+                    </button>
+                    <button class="sidebar-item" data-view="guide" id="side-guide">
+                        <i class="fa-regular fa-circle-question"></i>
+                        <span>Help & Guide</span>
+                    </button>
+                    <button class="sidebar-item logout-item" id="side-logout">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                        <span>Logout</span>
+                    </button>
+                </div>
 
-                <div class="search-box-card">
-                    <div class="input-header">
-                        <label for="procurement-input"><i class="fa-solid fa-file-contract"></i> Tender / Procurement Technical Specification</label>
-                        <span class="char-count" id="char-count">0 characters</span>
+                <div class="sidebar-footer-watermark">
+                    <div class="footer-shield-icon">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
+                            <path d="M12 2L4 5V11.5C4 16.5 7.5 21 12 22C16.5 21 20 16.5 20 11.5V5L12 2Z" fill="#2563eb" fill-opacity="0.15" stroke="#2563eb" stroke-width="1.5"/>
+                            <path d="M12 7V16M8.5 11.5H15.5" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
                     </div>
-                    <textarea id="procurement-input" placeholder="e.g. Procurement of 500kW grid-connected solar power conditioning units (inverters) for government building rooftop PV installation with anti-islanding protection and safety certification..."></textarea>
-                    
-                    <!-- Quick Preset Scenarios -->
-                    <div class="quick-scenarios">
-                        <span class="preset-label">Test Scenarios:</span>
-                        <button class="preset-btn" data-query="Procurement of 500kW grid-connected solar inverters with anti-islanding protection for government rooftop installation.">☀️ Solar Inverters</button>
-                        <button class="preset-btn" data-query="Supply of fortified sweet biscuits for government mid-day meal nutrition program.">🍪 Fortified Biscuits</button>
-                        <button class="preset-btn" data-query="Procure 10,000 bags of 53 grade Ordinary Portland Cement for highway bridge construction.">🏗️ 53 Grade Cement</button>
-                        <button class="preset-btn" data-query="Tender for TMT steel rebars Fe 500D for earthquake-resistant school building.">🧱 TMT Steel Rebars</button>
-                        <button class="preset-btn" data-query="Procurement of portable ABC dry powder fire extinguishers for hospital premises.">🧯 Fire Extinguishers</button>
-                        <button class="preset-btn" data-query="Supply of FFP2 / N95 particulate filtering half masks for sanitation workers.">😷 N95 Masks</button>
-                    </div>
+                    <div class="footer-bis-note">SIH26108 Grounded Engine</div>
+                </div>
+            </aside>
 
-                    <div class="search-actions">
-                        <div class="filter-group">
-                            <select id="domain-filter">
-                                <option value="">🌐 All Technical Domains</option>
-                                <option value="Electrotechnical">⚡ Electrotechnical & Solar</option>
-                                <option value="Food and Agriculture">🌾 Food & Agriculture</option>
-                                <option value="Civil Engineering">🏗️ Civil & Construction</option>
-                                <option value="Electronics and Information Technology">💻 Electronics & IT</option>
-                                <option value="Mechanical Engineering">⚙️ Mechanical & Fire Safety</option>
-                                <option value="Personal Protective Equipment & Safety">🛡️ PPE & Safety</option>
-                            </select>
+            <!-- Main Content Area -->
+            <main class="content-viewport">
+                <!-- VIEW 1: STANDIQ DASHBOARD / RECOMMENDATION RESULTS (Default Active View) -->
+                <section id="view-dashboard" class="app-view active">
+                    <!-- Top Action Header Banner -->
+                    <div class="result-header-bar">
+                        <div class="result-header-left">
+                            <div class="success-icon-badge">
+                                <i class="fa-solid fa-circle-check"></i>
+                            </div>
+                            <div class="result-header-text">
+                                <h1 class="result-header-title">Recommendation Completed</h1>
+                                <p class="result-header-subtitle">Standards identified based on your procurement requirement</p>
+                            </div>
                         </div>
-                        <button id="btn-recommend" class="btn-primary">
-                            <i class="fa-solid fa-wand-magic-sparkles"></i> Discover Applicable Standards
-                        </button>
+                        <div class="result-header-actions">
+                            <button class="btn-action-outline" id="btn-header-download-pdf">
+                                <i class="fa-solid fa-download"></i> Download Report (PDF)
+                            </button>
+                            <button class="btn-action-outline btn-action-spec" id="btn-header-tender-spec">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Tender Specification
+                            </button>
+                            <button class="btn-action-primary" id="btn-header-new-search">
+                                <i class="fa-solid fa-magnifying-glass"></i> New Search
+                            </button>
+                        </div>
                     </div>
-                </div>
-            </section>
 
-            <!-- Results Section -->
-            <section id="results-section" class="results-section hidden">
-                <!-- AI Extracted Entity Insights -->
-                <div class="insights-card">
-                    <div class="insights-header">
-                        <div class="insights-title"><i class="fa-solid fa-brain"></i> AI Understanding & Entity Extraction</div>
-                        <span class="proc-time" id="processing-time-badge">32ms</span>
-                    </div>
-                    <div class="entities-grid" id="entities-container">
-                        <!-- Populated by app.js -->
-                    </div>
-                </div>
+                    <!-- Hero Card: YOUR REQUIREMENT -->
+                    <div class="card requirement-hero-card">
+                        <div class="hero-left-col">
+                            <div class="hero-req-header">
+                                <div class="req-icon-box">
+                                    <i class="fa-regular fa-file-lines"></i>
+                                </div>
+                                <div class="req-title-wrap">
+                                    <span class="req-badge-label">YOUR REQUIREMENT</span>
+                                    <h2 class="requirement-display-text" id="display-requirement-text">
+                                        Stainless steel cable tray with perforated type for electrical wiring in industrial applications
+                                    </h2>
+                                </div>
+                            </div>
+                            <div class="req-metadata-chips">
+                                <div class="meta-chip">
+                                    <i class="fa-solid fa-globe"></i>
+                                    <span>Language: <strong id="meta-lang">English</strong></span>
+                                </div>
+                                <div class="meta-chip">
+                                    <i class="fa-regular fa-file-lines"></i>
+                                    <span>Source: <strong id="meta-source">Text Input</strong></span>
+                                </div>
+                                <div class="meta-chip">
+                                    <i class="fa-regular fa-clock"></i>
+                                    <span>Searched on: <strong id="meta-date">28 May 2025, 11:30 AM</strong></span>
+                                </div>
+                            </div>
+                        </div>
 
-                <!-- Primary Recommendations List -->
-                <div class="section-title-row">
-                    <h2><i class="fa-solid fa-certificate"></i> Recommended Indian Standards (IS)</h2>
-                    <button id="btn-export-annexure" class="btn-sm"><i class="fa-solid fa-file-export"></i> Export GeM Annexure</button>
-                </div>
-                <div class="cards-list" id="recommendations-container">
-                    <!-- Populated by app.js -->
-                </div>
+                        <div class="hero-right-col">
+                            <div class="score-metric-box">
+                                <div class="score-metric-header">Best Match Score</div>
+                                <div class="score-number-row">
+                                    <div class="score-metric-text-group">
+                                        <span class="score-large-number" id="display-score-large">95%</span>
+                                        <span class="score-tier-label" id="display-score-tier">High Relevance</span>
+                                    </div>
+                                    <div class="score-progress-ring">
+                                        <svg class="ring-svg" viewBox="0 0 100 100">
+                                            <circle class="ring-bg" cx="50" cy="50" r="40"></circle>
+                                            <circle class="ring-fg" id="ring-score-circle" cx="50" cy="50" r="40"></circle>
+                                        </svg>
+                                        <span class="ring-center-text" id="ring-score-text">95%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-                <!-- Allied & Normative Cross-References -->
-                <div class="allied-section">
-                    <div class="section-title-row">
-                        <h3><i class="fa-solid fa-network-wired"></i> Allied Normative References & Raw Material Standards</h3>
-                    </div>
-                    <div class="allied-grid" id="allied-container">
-                        <!-- Populated by app.js -->
-                    </div>
-                </div>
-            </section>
+                    <!-- 6-Metric Stat Summary Row -->
+                    <div class="stats-summary-grid">
+                        <div class="stat-card">
+                            <div class="stat-card-icon icon-blue">
+                                <i class="fa-solid fa-layer-group"></i>
+                            </div>
+                            <div class="stat-card-content">
+                                <div class="stat-card-label">Standards Found</div>
+                                <div class="stat-card-value" id="stat-standards-found">12</div>
+                                <div class="stat-card-sub">Relevant Standards</div>
+                            </div>
+                        </div>
 
-            <!-- Benchmark Modal -->
-            <div id="benchmark-modal" class="modal-overlay hidden">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h3><i class="fa-solid fa-chart-pie"></i> Information Retrieval (IR) Benchmark Suite</h3>
-                        <button id="close-modal" class="close-btn">&times;</button>
-                    </div>
-                    <div class="modal-body" id="benchmark-results-body">
-                        <div class="loader-spinner"></div>
-                        <p class="text-center">Evaluating precision, recall, MRR, and nDCG across 15+ official procurement scenarios...</p>
-                    </div>
-                </div>
-            </div>
-        </main>
+                        <div class="stat-card">
+                            <div class="stat-card-icon icon-green">
+                                <i class="fa-solid fa-file-shield"></i>
+                            </div>
+                            <div class="stat-card-content">
+                                <div class="stat-card-label">Related Standards</div>
+                                <div class="stat-card-value" id="stat-related-standards">8</div>
+                                <div class="stat-card-sub">Normative / Allied</div>
+                            </div>
+                        </div>
 
-        <!-- Footer -->
-        <footer class="footer">
-            <div>Built for Smart India Hackathon (SIH26108) • Ministry of Consumer Affairs, Food & Public Distribution</div>
-            <div class="footer-links">
-                <a href="/docs" target="_blank"><i class="fa-solid fa-code"></i> FastAPI Swagger Docs</a>
-                <a href="https://standardsbis.bsbedge.com" target="_blank"><i class="fa-solid fa-arrow-up-right-from-square"></i> BIS Official Portal</a>
-            </div>
-        </footer>
+                        <div class="stat-card">
+                            <div class="stat-card-icon icon-orange">
+                                <i class="fa-regular fa-calendar-check"></i>
+                            </div>
+                            <div class="stat-card-content">
+                                <div class="stat-card-label">Latest Version</div>
+                                <div class="stat-card-value text-accent-orange" id="stat-latest-version">Up to date</div>
+                                <div class="stat-card-sub">Includes Amendments</div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-card-icon icon-purple">
+                                <i class="fa-solid fa-bullseye"></i>
+                            </div>
+                            <div class="stat-card-content">
+                                <div class="stat-card-label">Compliance Checks</div>
+                                <div class="stat-card-value" id="stat-compliance-checks">4 / 4</div>
+                                <div class="stat-card-sub">Applicable Identified</div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-card-icon icon-cyan">
+                                <i class="fa-regular fa-clipboard"></i>
+                            </div>
+                            <div class="stat-card-content">
+                                <div class="stat-card-label">Requirements Extracted</div>
+                                <div class="stat-card-value" id="stat-reqs-extracted">19</div>
+                                <div class="stat-card-sub">From Input</div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-card-icon icon-amber">
+                                <i class="fa-regular fa-file"></i>
+                            </div>
+                            <div class="stat-card-content">
+                                <div class="stat-card-label">Document Pages</div>
+                                <div class="stat-card-value" id="stat-doc-pages">0</div>
+                                <div class="stat-card-sub" id="stat-doc-type">(Text Input)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CARD 1: 1. RECOMMENDED INDIAN STANDARDS (Full Width Table) -->
+                    <div class="card dashboard-card">
+                        <div class="card-header-bar">
+                            <div class="card-header-title">
+                                <i class="fa-regular fa-file-lines section-icon"></i>
+                                <span>1. RECOMMENDED INDIAN STANDARDS</span>
+                            </div>
+                            <button class="card-header-link" id="btn-view-all-standards">View All (<span id="total-standards-badge">12</span>)</button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="standiq-table" id="table-recommended-standards">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 70px;">Rank</th>
+                                        <th style="width: 150px;">IS Number</th>
+                                        <th>Title</th>
+                                        <th style="width: 180px;">Applicability Score</th>
+                                        <th style="width: 100px;">Status</th>
+                                        <th style="width: 100px;">Type</th>
+                                        <th style="width: 140px; text-align: right;">Evidence</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody-recommended-standards">
+                                    <!-- Injected dynamically by app.js -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="card-footer-link">
+                            <button class="text-link-button" id="btn-view-all-standards-footer">
+                                View all <span id="footer-stds-count">12</span> recommended standards <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- TWO-COLUMN ROW: CARD 2 & CARD 3 -->
+                    <div class="grid-two-col">
+                        <!-- CARD 2: 2. WHY THESE STANDARDS ARE RECOMMENDED -->
+                        <div class="card dashboard-card">
+                            <div class="card-header-bar">
+                                <div class="card-header-title">
+                                    <i class="fa-regular fa-file-lines section-icon"></i>
+                                    <span>2. WHY THESE STANDARDS ARE RECOMMENDED</span>
+                                </div>
+                            </div>
+                            <div class="card-content-body">
+                                <div class="criteria-check-list" id="why-checklist">
+                                    <div class="criteria-item">
+                                        <i class="fa-solid fa-circle-check check-success"></i>
+                                        <span class="criteria-name">Product Type Match</span>
+                                    </div>
+                                    <div class="criteria-item">
+                                        <i class="fa-solid fa-circle-check check-success"></i>
+                                        <span class="criteria-name">Material Match</span>
+                                    </div>
+                                    <div class="criteria-item">
+                                        <i class="fa-solid fa-circle-check check-success"></i>
+                                        <span class="criteria-name">Application / Intended Use Match</span>
+                                    </div>
+                                    <div class="criteria-item">
+                                        <i class="fa-solid fa-circle-check check-success"></i>
+                                        <span class="criteria-name">Technical Requirements Match</span>
+                                    </div>
+                                    <div class="criteria-item">
+                                        <i class="fa-solid fa-circle-check check-success"></i>
+                                        <span class="criteria-name">Scope Match</span>
+                                    </div>
+                                </div>
+
+                                <!-- AI Explanation Box -->
+                                <div class="ai-explanation-box">
+                                    <div class="ai-box-header">
+                                        <i class="fa-regular fa-lightbulb ai-icon"></i>
+                                        <span class="ai-box-title">AI Explanation</span>
+                                    </div>
+                                    <p class="ai-box-text" id="ai-explanation-text">
+                                        These standards are recommended because the requirement matches the product type, material, application, and key technical attributes defined in the standards.
+                                    </p>
+                                    <button class="btn-box-outline" id="btn-view-explanation-modal">
+                                        View Explanation Details
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- CARD 3: 3. RELATED / NORMATIVE STANDARDS -->
+                        <div class="card dashboard-card">
+                            <div class="card-header-bar">
+                                <div class="card-header-title">
+                                    <i class="fa-regular fa-file-lines section-icon"></i>
+                                    <span>3. RELATED / NORMATIVE STANDARDS</span>
+                                </div>
+                            </div>
+                            <div class="card-content-body">
+                                <div class="table-responsive">
+                                    <table class="standiq-table standiq-sub-table" id="table-related-standards">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 140px;">IS Number</th>
+                                                <th>Standard Title & Scope</th>
+                                                <th style="width: 160px;">Relation Type</th>
+                                                <th style="width: 110px; text-align: right;">Evidence</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tbody-related-standards">
+                                            <!-- Populated dynamically via app.js -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="card-footer-link">
+                                <button class="text-link-button" id="btn-view-all-related">
+                                    View all related standards (<span id="count-all-related">8</span>) <i class="fa-solid fa-arrow-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- THREE-COLUMN ROW: CARD 4, CARD 5, CARD 6 -->
+                    <div class="grid-three-col">
+                        <!-- CARD 4: 4. VERSION & AMENDMENT STATUS -->
+                        <div class="card dashboard-card">
+                            <div class="card-header-bar">
+                                <div class="card-header-title">
+                                    <i class="fa-solid fa-pen-ruler section-icon"></i>
+                                    <span>4. VERSION & AMENDMENT STATUS</span>
+                                </div>
+                            </div>
+                            <div class="card-content-body">
+                                <div class="kv-list">
+                                    <div class="kv-row">
+                                        <span class="kv-key">Current Standard</span>
+                                        <span class="badge-pill-status pill-green" id="kv-current-std">Yes</span>
+                                    </div>
+                                    <div class="kv-row">
+                                        <span class="kv-key">Superseded</span>
+                                        <span class="badge-pill-status pill-gray" id="kv-superseded">No</span>
+                                    </div>
+                                    <div class="kv-row">
+                                        <span class="kv-key">Total Amendments</span>
+                                        <span class="kv-val-bold" id="kv-total-amendments">2</span>
+                                    </div>
+                                    <div class="kv-row">
+                                        <span class="kv-key">Latest Amendment</span>
+                                        <span class="kv-val" id="kv-latest-amd">Amendment No. 1 (2022)</span>
+                                    </div>
+                                    <div class="kv-row">
+                                        <span class="kv-key">Date of Latest Amendment</span>
+                                        <span class="kv-val" id="kv-date-latest-amd">15 Aug 2022</span>
+                                    </div>
+                                </div>
+
+                                <div class="alert-box-warning" id="box-version-alert">
+                                    <i class="fa-solid fa-triangle-exclamation alert-icon"></i>
+                                    <span class="alert-text">Tender may refer to an older version. Review recommended.</span>
+                                </div>
+
+                                <button class="btn-box-outline btn-full-width" id="btn-view-version-history">
+                                    View Version History
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- CARD 5: 5. CERTIFICATION & COMPLIANCE -->
+                        <div class="card dashboard-card">
+                            <div class="card-header-bar">
+                                <div class="card-header-title">
+                                    <i class="fa-regular fa-clock section-icon"></i>
+                                    <span>5. CERTIFICATION & COMPLIANCE</span>
+                                </div>
+                            </div>
+                            <div class="card-content-body">
+                                <div class="kv-list">
+                                    <div class="kv-row">
+                                        <span class="kv-key"><strong>BIS Product</strong> Certification</span>
+                                        <span class="badge-pill-status pill-green" id="comp-bis">Applicable</span>
+                                    </div>
+                                    <div class="kv-row">
+                                        <span class="kv-key"><strong>QCO</strong> (Quality Control Order)</span>
+                                        <span class="badge-pill-status pill-green" id="comp-qco">Applicable</span>
+                                    </div>
+                                    <div class="kv-row">
+                                        <span class="kv-key"><strong>CRS</strong> (Compulsory Registration Scheme)</span>
+                                        <span class="badge-pill-status pill-gray" id="comp-crs">Not Applicable</span>
+                                    </div>
+                                    <div class="kv-row">
+                                        <span class="kv-key"><strong>Hallmarking</strong></span>
+                                        <span class="badge-pill-status pill-gray" id="comp-hallmark">Not Applicable</span>
+                                    </div>
+                                </div>
+
+                                <div class="alert-box-info">
+                                    <i class="fa-solid fa-circle-info info-icon"></i>
+                                    <span class="alert-text">Compliance status is based on authorized BIS data and government notifications.</span>
+                                </div>
+
+                                <button class="btn-box-outline btn-full-width" id="btn-view-compliance-details">
+                                    View Details
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- CARD 6: 6. REQUIREMENT -> STANDARD MAPPING -->
+                        <div class="card dashboard-card">
+                            <div class="card-header-bar">
+                                <div class="card-header-title">
+                                    <i class="fa-regular fa-file-lines section-icon"></i>
+                                    <span>6. REQUIREMENT → STANDARD MAPPING</span>
+                                </div>
+                            </div>
+                            <div class="card-content-body">
+                                <table class="mapping-table" id="table-mapping">
+                                    <thead>
+                                        <tr>
+                                            <th>Requirement Element</th>
+                                            <th>Matched in Standard</th>
+                                            <th style="width: 40px; text-align: center;">Match</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbody-mapping">
+                                        <tr>
+                                            <td>Product Type</td>
+                                            <td>Scope / Title</td>
+                                            <td class="text-center"><i class="fa-solid fa-circle-check check-success"></i></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Material</td>
+                                            <td>Material Specification</td>
+                                            <td class="text-center"><i class="fa-solid fa-circle-check check-success"></i></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Application / Use</td>
+                                            <td>Scope Clause</td>
+                                            <td class="text-center"><i class="fa-solid fa-circle-check check-success"></i></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Perforated Type</td>
+                                            <td>Technical Requirement</td>
+                                            <td class="text-center"><i class="fa-solid fa-circle-check check-success"></i></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Load / Strength</td>
+                                            <td>Clause / Table</td>
+                                            <td class="text-center"><i class="fa-solid fa-circle-check check-success"></i></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Finishing / Coating</td>
+                                            <td>Related Standard</td>
+                                            <td class="text-center"><i class="fa-solid fa-circle-check check-success"></i></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Testing</td>
+                                            <td>Test Method</td>
+                                            <td class="text-center"><i class="fa-solid fa-circle-check check-success"></i></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Installation</td>
+                                            <td>Allied Standard</td>
+                                            <td class="text-center"><i class="fa-solid fa-circle-check check-success"></i></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                                <button class="btn-box-outline btn-full-width" style="margin-top: 14px;" id="btn-view-full-mapping">
+                                    View Full Mapping
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- THREE-COLUMN BOTTOM ROW: CARD 7, CARD 8, CARD 9 -->
+                    <div class="grid-three-col">
+                        <!-- CARD 7: 7. MISSING / AMBIGUOUS INFORMATION -->
+                        <div class="card dashboard-card">
+                            <div class="card-header-bar">
+                                <div class="card-header-title">
+                                    <i class="fa-solid fa-triangle-exclamation section-icon text-warning"></i>
+                                    <span>7. MISSING / AMBIGUOUS INFORMATION</span>
+                                </div>
+                            </div>
+                            <div class="card-content-body">
+                                <p class="card-intro-note">The following information could improve applicability:</p>
+                                <ul class="bullet-list-missing" id="list-missing-info">
+                                    <li>Specified load capacity not mentioned</li>
+                                    <li>Tray width, height, and thickness not specified</li>
+                                    <li>Environmental conditions not specified</li>
+                                    <li>Coating type and thickness not mentioned</li>
+                                </ul>
+
+                                <button class="btn-box-outline btn-full-width" style="margin-top: 24px;" id="btn-refine-requirement">
+                                    Refine Requirement
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- CARD 8: 8. TENDER-READY OUTPUT -->
+                        <div class="card dashboard-card">
+                            <div class="card-header-bar">
+                                <div class="card-header-title">
+                                    <i class="fa-regular fa-file-lines section-icon"></i>
+                                    <span>8. TENDER-READY OUTPUT</span>
+                                </div>
+                            </div>
+                            <div class="card-content-body">
+                                <p class="card-intro-note">Your procurement specification should include:</p>
+                                <div class="criteria-check-list" style="margin-bottom: 20px;">
+                                    <div class="criteria-item">
+                                        <i class="fa-solid fa-circle-check check-success"></i>
+                                        <span class="criteria-name">Primary Applicable Standard(s)</span>
+                                    </div>
+                                    <div class="criteria-item">
+                                        <i class="fa-solid fa-circle-check check-success"></i>
+                                        <span class="criteria-name">Supporting / Related Standards</span>
+                                    </div>
+                                    <div class="criteria-item">
+                                        <i class="fa-solid fa-circle-check check-success"></i>
+                                        <span class="criteria-name">Test Methods</span>
+                                    </div>
+                                    <div class="criteria-item">
+                                        <i class="fa-solid fa-circle-check check-success"></i>
+                                        <span class="criteria-name">Safety & Installation Standards</span>
+                                    </div>
+                                    <div class="criteria-item">
+                                        <i class="fa-solid fa-circle-check check-success"></i>
+                                        <span class="criteria-name">Applicable Compliance Requirements</span>
+                                    </div>
+                                </div>
+
+                                <button class="btn-action-primary btn-full-width" id="btn-card-tender-spec">
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Tender Specification
+                                </button>
+                                <button class="btn-box-outline btn-full-width" style="margin-top: 8px;" id="btn-card-download-pdf">
+                                    <i class="fa-solid fa-download"></i> Download Report (PDF)
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- CARD 9: 9. SOURCE & TRACEABILITY -->
+                        <div class="card dashboard-card">
+                            <div class="card-header-bar">
+                                <div class="card-header-title">
+                                    <i class="fa-regular fa-file-lines section-icon"></i>
+                                    <span>9. SOURCE & TRACEABILITY</span>
+                                </div>
+                            </div>
+                            <div class="card-content-body">
+                                <div class="kv-list">
+                                    <div class="kv-row">
+                                        <span class="kv-key">Primary Source</span>
+                                        <span class="kv-val-bold">Bureau of Indian Standards (BIS)</span>
+                                    </div>
+                                    <div class="kv-row">
+                                        <span class="kv-key">Data Status</span>
+                                        <span class="kv-val">Verified & Updated</span>
+                                    </div>
+                                    <div class="kv-row">
+                                        <span class="kv-key">Indexed On</span>
+                                        <span class="kv-val">27 May 2025</span>
+                                    </div>
+                                    <div class="kv-row">
+                                        <span class="kv-key">Retrieved On</span>
+                                        <span class="kv-val" id="kv-retrieved-on">28 May 2025, 11:30 AM</span>
+                                    </div>
+                                    <div class="kv-row">
+                                        <span class="kv-key">Source References</span>
+                                        <a href="#evidence" class="kv-link" id="link-source-documents">View Source Documents</a>
+                                    </div>
+                                    <div class="kv-row">
+                                        <span class="kv-key">Retrieval Method</span>
+                                        <span class="kv-val">Semantic + Keyword Hybrid Search</span>
+                                    </div>
+                                </div>
+
+                                <div class="alert-box-success" style="margin-top: 14px;">
+                                    <div class="alert-success-content">
+                                        <i class="fa-solid fa-circle-check check-success"></i>
+                                        <div class="alert-text">
+                                            All results are traceable to authorized BIS documents and official notifications.
+                                        </div>
+                                    </div>
+                                    <button class="link-view-evidence" id="btn-view-all-evidence-source">View All Evidence</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW 2: SEARCH STANDARDS VIEW -->
+                <section id="view-search" class="app-view">
+                    <div class="view-header">
+                        <h2><i class="fa-solid fa-magnifying-glass"></i> Search & Discover Applicable Indian Standards</h2>
+                        <p>Input your technical procurement requirement, specification clauses, or search directly by IS number.</p>
+                    </div>
+
+                    <div class="card composer-card">
+                        <div class="form-group">
+                            <label class="form-label" for="search-input-requirement">
+                                Technical Requirement / Tender Specification
+                            </label>
+                            <textarea id="search-input-requirement" class="form-textarea" rows="4" placeholder="Enter tender specification, product details, material grade, or safety requirements (e.g. Stainless steel cable tray with perforated type for electrical wiring in industrial applications)..."></textarea>
+                            <div class="textarea-footer">
+                                <span class="char-count" id="search-char-count">0 characters</span>
+                                <span class="help-text">Grounded matching against Bureau of Indian Standards catalog</span>
+                            </div>
+                        </div>
+
+                        <div class="filter-row">
+                            <div class="form-col">
+                                <label class="form-label" for="search-domain-filter">Domain Filter (Optional)</label>
+                                <select id="search-domain-filter" class="form-select">
+                                    <option value="">All Technical Domains (Automatic Detection)</option>
+                                    <option value="Mechanical and Metallurgy">Mechanical & Metallurgy (MTD)</option>
+                                    <option value="Electrical Engineering">Electrical Engineering (ETD)</option>
+                                    <option value="Civil Engineering">Civil & Structural (CED)</option>
+                                    <option value="Food and Agriculture">Food & Agriculture (FAD)</option>
+                                    <option value="Electronics and Information Technology">Electronics & IT (LITD)</option>
+                                    <option value="Fire Safety and Protection">Fire & Occupational Safety (MED)</option>
+                                </select>
+                            </div>
+                            <div class="form-col-action">
+                                <button class="btn-action-primary btn-large" id="btn-run-recommendation">
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i> Discover Applicable Standards
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Preset Procurement Scenarios -->
+                        <div class="presets-section">
+                            <div class="presets-label">
+                                <i class="fa-solid fa-bolt"></i> Instant Test Procurement Scenarios (SIH Benchmark):
+                            </div>
+                            <div class="preset-chips-list">
+                                <button class="preset-chip active-chip" data-query="Stainless steel cable tray with perforated type for electrical wiring in industrial applications" data-domain="Mechanical and Metallurgy">
+                                    Stainless Steel Cable Tray (Default)
+                                </button>
+                                <button class="preset-chip" data-query="Procurement of 500kW grid-connected solar inverters for government office rooftop PV installation with anti-islanding protection." data-domain="Electrical Engineering">
+                                    500kW Solar Inverter (IS 16221)
+                                </button>
+                                <button class="preset-chip" data-query="Supply of fortified sweet biscuits for government mid-day meal nutrition program." data-domain="Food and Agriculture">
+                                    Mid-Day Meal Biscuits (IS 1011)
+                                </button>
+                                <button class="preset-chip" data-query="Procure 10,000 bags of 53 grade Ordinary Portland Cement for national highway bridge construction." data-domain="Civil Engineering">
+                                    53 Grade OPC Cement (IS 269)
+                                </button>
+                                <button class="preset-chip" data-query="Tender for TMT steel rebars Fe 500D for earthquake-resistant school building construction." data-domain="Civil Engineering">
+                                    TMT Rebars Fe 500D (IS 1786)
+                                </button>
+                                <button class="preset-chip" data-query="Procurement of 500 units of portable ABC dry powder fire extinguishers for hospital premises." data-domain="Fire Safety and Protection">
+                                    Fire Extinguishers (IS 15683)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW 3: UPLOAD DOCUMENT VIEW -->
+                <section id="view-upload" class="app-view">
+                    <div class="view-header">
+                        <h2><i class="fa-solid fa-file-arrow-up"></i> Upload Procurement Specification Document</h2>
+                        <p>Upload tender RFP, Notice Inviting Tender (NIT), GeM Bid specification (PDF / TXT / DOCX) to automatically extract requirements and match Indian Standards.</p>
+                    </div>
+
+                    <div class="card upload-card">
+                        <div class="dropzone-area" id="dropzone-tender">
+                            <div class="dropzone-icon">
+                                <i class="fa-solid fa-cloud-arrow-up"></i>
+                            </div>
+                            <h3 class="dropzone-title">Drag and drop your Tender Document here</h3>
+                            <p class="dropzone-sub">Supports PDF, DOCX, TXT files up to 25MB</p>
+                            <div class="dropzone-actions">
+                                <label for="tender-file-input" class="btn-action-primary">
+                                    <i class="fa-solid fa-folder-open"></i> Browse Files
+                                </label>
+                                <input type="file" id="tender-file-input" accept=".pdf,.docx,.txt,.doc" style="display: none;">
+                            </div>
+                        </div>
+
+                        <!-- Uploaded Preview Box -->
+                        <div id="upload-preview-box" class="upload-preview-box hidden">
+                            <div class="preview-header">
+                                <div class="preview-file-info">
+                                    <i class="fa-solid fa-file-lines"></i>
+                                    <span id="preview-filename">CPWD_NIT_Cable_Tray_Industrial_2026.pdf</span>
+                                    <span class="preview-tag" id="preview-pages">2 Pages Extracted</span>
+                                </div>
+                                <button class="btn-clear-preview" id="btn-clear-upload"><i class="fa-solid fa-xmark"></i></button>
+                            </div>
+                            <div class="preview-text-scroll" id="preview-extracted-text"></div>
+                            <div class="preview-footer">
+                                <button class="btn-action-primary btn-large" id="btn-process-uploaded-doc">
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i> Extract Technical Spec & Recommend Standards
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW 4: HISTORY VIEW -->
+                <section id="view-history" class="app-view">
+                    <div class="view-header">
+                        <div class="view-header-row">
+                            <div>
+                                <h2><i class="fa-solid fa-clock-rotate-left"></i> Search & Recommendation History</h2>
+                                <p>Review all previously analyzed procurement requirements, scores, and dates.</p>
+                            </div>
+                            <button class="btn-action-outline" id="btn-clear-history">
+                                <i class="fa-solid fa-trash-can"></i> Clear History
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card history-card">
+                        <div class="table-responsive">
+                            <table class="standiq-table" id="table-history">
+                                <thead>
+                                    <tr>
+                                        <th>Procurement Requirement</th>
+                                        <th>Domain</th>
+                                        <th>Source</th>
+                                        <th>Standards Found</th>
+                                        <th>Best Score</th>
+                                        <th>Date & Time</th>
+                                        <th style="text-align: right;">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody-history">
+                                    <!-- Populated via JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW 5: SAVED RESULTS VIEW -->
+                <section id="view-saved" class="app-view">
+                    <div class="view-header">
+                        <div class="view-header-row">
+                            <div>
+                                <h2><i class="fa-solid fa-bookmark"></i> Saved Procurement Results & Tenders</h2>
+                                <p>Bookmarked tender specifications and standard compliance portfolios.</p>
+                            </div>
+                            <button class="btn-action-primary" id="btn-bookmark-current">
+                                <i class="fa-solid fa-bookmark"></i> Bookmark Current Result
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card saved-card">
+                        <div class="saved-grid" id="saved-results-grid">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW 6: ALERTS VIEW -->
+                <section id="view-alerts" class="app-view">
+                    <div class="view-header">
+                        <h2><i class="fa-solid fa-bell"></i> BIS Regulatory & Quality Control Order (QCO) Alerts</h2>
+                        <p>Real-time notifications on Bureau of Indian Standards Quality Control Orders, revisions, and gazette notifications.</p>
+                    </div>
+
+                    <div class="alerts-feed">
+                        <div class="alert-card-item">
+                            <div class="alert-item-header">
+                                <span class="badge-qco">MANDATORY QCO</span>
+                                <span class="alert-date">Published: 15 August 2024</span>
+                            </div>
+                            <h3 class="alert-item-title">Quality Control Order for Stainless Steel Wire & Cable Management Products (IS 1239 / IS 4759)</h3>
+                            <p class="alert-item-desc">Ministry of Heavy Industries & BIS notify mandatory ISI certification scheme for all metallic cable trays, cable ladders, and structural steel supports used in infrastructure projects.</p>
+                            <div class="alert-item-meta">
+                                <span><i class="fa-solid fa-scale-balanced"></i> Enforcement: Immediate for Central PSUs & GeM</span>
+                                <a href="https://standardsbis.bsbedge.com" target="_blank" class="alert-link">Read Gazette Order <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+                            </div>
+                        </div>
+
+                        <div class="alert-card-item">
+                            <div class="alert-item-header">
+                                <span class="badge-revision">REVISED STANDARD</span>
+                                <span class="alert-date">Published: 10 May 2024</span>
+                            </div>
+                            <h3 class="alert-item-title">Amendment No. 2 Issued for IS 1239:2018 (Corrosion Resistance & Tolerances)</h3>
+                            <p class="alert-item-desc">Bureau of Indian Standards has published active Amendment No. 2 defining enhanced intergranular corrosion test requirements and thickness tolerances for perforated industrial raceways.</p>
+                            <div class="alert-item-meta">
+                                <span><i class="fa-solid fa-book"></i> Section 4.2 & Table 3 modified</span>
+                                <a href="https://standardsbis.bsbedge.com" target="_blank" class="alert-link">View Amendment Preview <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+                            </div>
+                        </div>
+
+                        <div class="alert-card-item">
+                            <div class="alert-item-header">
+                                <span class="badge-qco">SOLAR PV REGULATION</span>
+                                <span class="alert-date">Published: 22 January 2024</span>
+                            </div>
+                            <h3 class="alert-item-title">MNRE Circular: Mandatory IS 16221 (Part 1 & 2) & IS 16169 for Solar Power Inverters</h3>
+                            <p class="alert-item-desc">Tenders without mandatory testing certifications under IS 16221 and anti-islanding conformity under IS 16169 are deemed technically non-responsive on Government e-Marketplace (GeM).</p>
+                            <div class="alert-item-meta">
+                                <span><i class="fa-solid fa-shield-halved"></i> Safety & Anti-Islanding Mandatory</span>
+                                <a href="https://standardsbis.bsbedge.com" target="_blank" class="alert-link">View BIS Standard <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW 7: SETTINGS VIEW -->
+                <section id="view-settings" class="app-view">
+                    <div class="view-header">
+                        <h2><i class="fa-solid fa-gear"></i> System Preferences & Configuration</h2>
+                        <p>Configure evaluation parameters, procurement agency preferences, and export formats.</p>
+                    </div>
+
+                    <div class="card settings-card">
+                        <div class="settings-section">
+                            <h3 class="settings-subheading">Appearance & Interface Theme</h3>
+                            <div class="settings-grid">
+                                <div class="form-group">
+                                    <label class="form-label">Theme Mode</label>
+                                    <select class="form-select" id="setting-theme-mode">
+                                        <option value="light" selected>Light Mode (StandIQ Standard)</option>
+                                        <option value="dark">Dark Mode (Midnight Slate)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-section">
+                            <h3 class="settings-subheading">Procurement Profile</h3>
+                            <div class="settings-grid">
+                                <div class="form-group">
+                                    <label class="form-label">Procuring Agency / Ministry</label>
+                                    <input type="text" class="form-input" value="GeM / Central Public Works Department (CPWD)" id="setting-agency">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Technical Officer Name</label>
+                                    <input type="text" class="form-input" value="Ravichandran M." id="setting-officer">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-section">
+                            <h3 class="settings-subheading">AI Recommendation Parameters</h3>
+                            <div class="settings-grid">
+                                <div class="form-group">
+                                    <label class="form-label">Retrieval Mode</label>
+                                    <select class="form-select" id="setting-retrieval-mode">
+                                        <option value="hybrid" selected>Hybrid (Dense Semantic + BM25 Lexical + IS Token Bonus)</option>
+                                        <option value="strict">Strict BIS Grounded Scope Only</option>
+                                        <option value="semantic">Pure Vector Cosine Similarity</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Top-K Recommendations Count</label>
+                                    <select class="form-select" id="setting-topk">
+                                        <option value="5" selected>Top 5 Recommendations</option>
+                                        <option value="10">Top 10 Recommendations</option>
+                                        <option value="15">Top 15 Recommendations</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-section">
+                            <h3 class="settings-subheading">Export Options</h3>
+                            <div class="settings-grid">
+                                <div class="form-group">
+                                    <label class="form-label">Default Report Format</label>
+                                    <select class="form-select" id="setting-report-format">
+                                        <option value="pdf" selected>Printable PDF with BIS Seal & GeM Table</option>
+                                        <option value="markdown">Markdown Technical Specification (.md)</option>
+                                        <option value="json">JSON API Response</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Include Zero-Hallucination Evidence Quotations</label>
+                                    <select class="form-select" id="setting-hallucination-quote">
+                                        <option value="yes" selected>Yes (Full Official Scope & Clause Text)</option>
+                                        <option value="no">Summary Only</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-footer">
+                            <button class="btn-action-primary" id="btn-save-settings">
+                                <i class="fa-solid fa-check"></i> Save Preferences
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW 8: HELP & GUIDE VIEW -->
+                <section id="view-guide" class="app-view">
+                    <div class="view-header">
+                        <h2><i class="fa-regular fa-circle-question"></i> StandIQ Operational User Guide</h2>
+                        <p>Guide for Government Procurement Officers, GeM Sellers, and SIH 2026 Technical Evaluators.</p>
+                    </div>
+
+                    <div class="card guide-card">
+                        <div class="guide-item">
+                            <h3>1. What is StandIQ?</h3>
+                            <p>StandIQ (SIH Problem Statement SIH26108) is an AI-powered Indian Standards recommendation engine designed for the Ministry of Consumer Affairs, Food & Public Distribution. It eliminates technical errors, omissions of safety clauses, and citation of obsolete standards in public procurement tenders.</p>
+                        </div>
+
+                        <div class="guide-item">
+                            <h3>2. How does the Grounded Recommendation work?</h3>
+                            <p>StandIQ extracts key procurement entities (product category, materials, application, safety-critical clauses) from your tender specifications. It matches them against the official Bureau of Indian Standards repository using hybrid dense vector search and full-text keyword indexing. Every rationale quotes verified BIS scope text to guarantee 0% hallucination.</p>
+                        </div>
+
+                        <div class="guide-item">
+                            <h3>3. Generating Tender-Ready GeM Annexures</h3>
+                            <p>Click "Generate Tender Specification" on any recommendation to produce ready-to-copy technical compliance clauses. Use "Download Report (PDF)" to obtain an authentic, formatted evaluation report with normative cross-reference matrices.</p>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
     </div>
 
-    <!-- Scripts -->
+    <!-- MODAL 1: VIEW EVIDENCE MODAL -->
+    <div id="modal-evidence" class="modal-backdrop hidden">
+        <div class="modal-dialog modal-large">
+            <div class="modal-header">
+                <div class="modal-header-title">
+                    <i class="fa-solid fa-shield-halved modal-icon-blue"></i>
+                    <div>
+                        <h3 id="evidence-modal-title">Official BIS Evidence & Verified Scope</h3>
+                        <span class="modal-subtitle" id="evidence-modal-subtitle">IS 1239:2018 — Stainless Steel Wire and Wire Products</span>
+                    </div>
+                </div>
+                <button class="modal-close-btn" id="close-modal-evidence"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body" id="evidence-modal-body">
+                <!-- Dynamically filled -->
+            </div>
+            <div class="modal-footer">
+                <a href="#" target="_blank" class="btn-action-outline" id="evidence-external-link">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i> Open BIS Portal
+                </a>
+                <button class="btn-action-primary" id="btn-close-evidence-modal">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: AI EXPLANATION DETAILS MODAL -->
+    <div id="modal-explanation" class="modal-backdrop hidden">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <div class="modal-header-title">
+                    <i class="fa-regular fa-lightbulb modal-icon-amber"></i>
+                    <div>
+                        <h3>AI Recommendation Explanation Breakdown</h3>
+                        <span class="modal-subtitle">Grounded Multi-Feature Relevance Scoring</span>
+                    </div>
+                </div>
+                <button class="modal-close-btn" id="close-modal-explanation"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body" id="explanation-modal-body">
+                <!-- Dynamically filled -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn-action-primary" id="btn-close-explanation-modal">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: GENERATE TENDER SPECIFICATION MODAL -->
+    <div id="modal-tender-spec" class="modal-backdrop hidden">
+        <div class="modal-dialog modal-large">
+            <div class="modal-header">
+                <div class="modal-header-title">
+                    <i class="fa-solid fa-wand-magic-sparkles modal-icon-blue"></i>
+                    <div>
+                        <h3>Tender-Ready Technical Specification Clause</h3>
+                        <span class="modal-subtitle">Formatted for GeM (Government e-Marketplace) & Central Procurement Tenders</span>
+                    </div>
+                </div>
+                <button class="modal-close-btn" id="close-modal-tender-spec"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="tender-spec-preview" id="tender-spec-text-content">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-action-outline" id="btn-copy-tender-spec">
+                    <i class="fa-regular fa-copy"></i> Copy to Clipboard
+                </button>
+                <button class="btn-action-primary" id="btn-download-tender-spec-file">
+                    <i class="fa-solid fa-file-arrow-down"></i> Download Specification (.md)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 4: USER PROFILE MODAL -->
+    <div id="modal-profile" class="modal-backdrop hidden">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <div class="modal-header-title">
+                    <div class="profile-large-avatar">RM</div>
+                    <div>
+                        <h3>Ravichandran M.</h3>
+                        <span class="modal-subtitle">Senior Procurement Specialist & Technical Evaluator</span>
+                    </div>
+                </div>
+                <button class="modal-close-btn" id="close-modal-profile"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="profile-info-grid">
+                    <div class="profile-row">
+                        <span class="p-label">Organization:</span>
+                        <span class="p-val">Ministry of Consumer Affairs, Food & Public Distribution</span>
+                    </div>
+                    <div class="profile-row">
+                        <span class="p-label">Portal:</span>
+                        <span class="p-val">Government e-Marketplace (GeM) / CPWD Technical Cell</span>
+                    </div>
+                    <div class="profile-row">
+                        <span class="p-label">Role:</span>
+                        <span class="p-val">Nodal Technical Evaluator (SIH26108)</span>
+                    </div>
+                    <div class="profile-row">
+                        <span class="p-label">Clearance Level:</span>
+                        <span class="badge-pill-status pill-green">Authorized BIS Level-3</span>
+                    </div>
+                    <div class="profile-row">
+                        <span class="p-label">Total Tenders Evaluated:</span>
+                        <span class="p-val">142</span>
+                    </div>
+                    <div class="profile-row">
+                        <span class="p-label">Session Status:</span>
+                        <span class="p-val" style="color: #16a34a;"><i class="fa-solid fa-circle" style="font-size: 8px;"></i> Active & Authenticated</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-action-outline" id="btn-profile-logout">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
+                </button>
+                <button class="btn-action-primary" id="btn-close-profile">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 5: LOGOUT CONFIRMATION MODAL -->
+    <div id="modal-logout" class="modal-backdrop hidden">
+        <div class="modal-dialog modal-small">
+            <div class="modal-header">
+                <div class="modal-header-title">
+                    <i class="fa-solid fa-arrow-right-from-bracket modal-icon-blue"></i>
+                    <div>
+                        <h3>Confirm Logout</h3>
+                        <span class="modal-subtitle">StandIQ Session</span>
+                    </div>
+                </div>
+                <button class="modal-close-btn" id="close-modal-logout"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to end your current session? Your saved results and search history will remain securely stored.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-action-outline" id="btn-cancel-logout">Cancel</button>
+                <button class="btn-action-primary btn-danger-bg" id="btn-confirm-logout">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 6: IR BENCHMARK MODAL -->
+    <div id="modal-benchmark" class="modal-backdrop hidden">
+        <div class="modal-dialog modal-large">
+            <div class="modal-header">
+                <div class="modal-header-title">
+                    <i class="fa-solid fa-chart-line modal-icon-blue"></i>
+                    <div>
+                        <h3>StandIQ IR Evaluation Benchmark Suite</h3>
+                        <span class="modal-subtitle">SIH26108 Retrieval Precision & Recall Metrics</span>
+                    </div>
+                </div>
+                <button class="modal-close-btn" id="close-modal-benchmark"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body" id="benchmark-results-body">
+                <!-- Dynamically filled -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn-action-primary" id="btn-close-benchmark">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- StandIQ Application Script -->
     <script src="/static/app.js"></script>
 </body>
 </html>
