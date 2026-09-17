@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered Indian Standards Discovery & Recommendation Engine | SIH26108</title>
+    <meta name="description" content="AI recommendation system for discovering applicable Bureau of Indian Standards (BIS/IS) for government tenders and procurement specifications.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Top Navbar -->
+        <header class="navbar">
+            <div class="nav-left">
+                <div class="brand-logo">
+                    <i class="fa-solid fa-scale-balanced logo-icon"></i>
+                    <div>
+                        <div class="brand-title">BIS ManakAI <span class="badge-sih">SIH26108</span></div>
+                        <div class="brand-subtitle">Ministry of Consumer Affairs, Food & Public Distribution</div>
+                    </div>
+                </div>
+            </div>
+            <div class="nav-right">
+                <div class="status-indicator">
+                    <span class="pulse-dot"></span>
+                    <span id="api-status-text">Backend Connected</span>
+                </div>
+                <button id="btn-run-benchmark" class="btn-secondary">
+                    <i class="fa-solid fa-chart-line"></i> IR Benchmark
+                </button>
+            </div>
+        </header>
+
+        <!-- Hero & Procurement Input Section -->
+        <main class="main-content">
+            <section class="hero-section">
+                <h1 class="hero-title">AI-Powered Indian Standards (BIS) Discovery Engine</h1>
+                <p class="hero-desc">Enter procurement specifications, tender requirements, or product descriptions in natural language. Our hybrid AI engine identifies applicable IS standards, normative references, safety clauses, and testing criteria.</p>
+
+                <div class="search-box-card">
+                    <div class="input-header">
+                        <label for="procurement-input"><i class="fa-solid fa-file-contract"></i> Tender / Procurement Technical Specification</label>
+                        <span class="char-count" id="char-count">0 characters</span>
+                    </div>
+                    <textarea id="procurement-input" placeholder="e.g. Procurement of 500kW grid-connected solar power conditioning units (inverters) for government building rooftop PV installation with anti-islanding protection and safety certification..."></textarea>
+                    
+                    <!-- Quick Preset Scenarios -->
+                    <div class="quick-scenarios">
+                        <span class="preset-label">Test Scenarios:</span>
+                        <button class="preset-btn" data-query="Procurement of 500kW grid-connected solar inverters with anti-islanding protection for government rooftop installation.">☀️ Solar Inverters</button>
+                        <button class="preset-btn" data-query="Supply of fortified sweet biscuits for government mid-day meal nutrition program.">🍪 Fortified Biscuits</button>
+                        <button class="preset-btn" data-query="Procure 10,000 bags of 53 grade Ordinary Portland Cement for highway bridge construction.">🏗️ 53 Grade Cement</button>
+                        <button class="preset-btn" data-query="Tender for TMT steel rebars Fe 500D for earthquake-resistant school building.">🧱 TMT Steel Rebars</button>
+                        <button class="preset-btn" data-query="Procurement of portable ABC dry powder fire extinguishers for hospital premises.">🧯 Fire Extinguishers</button>
+                        <button class="preset-btn" data-query="Supply of FFP2 / N95 particulate filtering half masks for sanitation workers.">😷 N95 Masks</button>
+                    </div>
+
+                    <div class="search-actions">
+                        <div class="filter-group">
+                            <select id="domain-filter">
+                                <option value="">🌐 All Technical Domains</option>
+                                <option value="Electrotechnical">⚡ Electrotechnical & Solar</option>
+                                <option value="Food and Agriculture">🌾 Food & Agriculture</option>
+                                <option value="Civil Engineering">🏗️ Civil & Construction</option>
+                                <option value="Electronics and Information Technology">💻 Electronics & IT</option>
+                                <option value="Mechanical Engineering">⚙️ Mechanical & Fire Safety</option>
+                                <option value="Personal Protective Equipment & Safety">🛡️ PPE & Safety</option>
+                            </select>
+                        </div>
+                        <button id="btn-recommend" class="btn-primary">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> Discover Applicable Standards
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section id="results-section" class="results-section hidden">
+                <!-- AI Extracted Entity Insights -->
+                <div class="insights-card">
+                    <div class="insights-header">
+                        <div class="insights-title"><i class="fa-solid fa-brain"></i> AI Understanding & Entity Extraction</div>
+                        <span class="proc-time" id="processing-time-badge">32ms</span>
+                    </div>
+                    <div class="entities-grid" id="entities-container">
+                        <!-- Populated by app.js -->
+                    </div>
+                </div>
+
+                <!-- Primary Recommendations List -->
+                <div class="section-title-row">
+                    <h2><i class="fa-solid fa-certificate"></i> Recommended Indian Standards (IS)</h2>
+                    <button id="btn-export-annexure" class="btn-sm"><i class="fa-solid fa-file-export"></i> Export GeM Annexure</button>
+                </div>
+                <div class="cards-list" id="recommendations-container">
+                    <!-- Populated by app.js -->
+                </div>
+
+                <!-- Allied & Normative Cross-References -->
+                <div class="allied-section">
+                    <div class="section-title-row">
+                        <h3><i class="fa-solid fa-network-wired"></i> Allied Normative References & Raw Material Standards</h3>
+                    </div>
+                    <div class="allied-grid" id="allied-container">
+                        <!-- Populated by app.js -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Benchmark Modal -->
+            <div id="benchmark-modal" class="modal-overlay hidden">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3><i class="fa-solid fa-chart-pie"></i> Information Retrieval (IR) Benchmark Suite</h3>
+                        <button id="close-modal" class="close-btn">&times;</button>
+                    </div>
+                    <div class="modal-body" id="benchmark-results-body">
+                        <div class="loader-spinner"></div>
+                        <p class="text-center">Evaluating precision, recall, MRR, and nDCG across 15+ official procurement scenarios...</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div>Built for Smart India Hackathon (SIH26108) • Ministry of Consumer Affairs, Food & Public Distribution</div>
+            <div class="footer-links">
+                <a href="/docs" target="_blank"><i class="fa-solid fa-code"></i> FastAPI Swagger Docs</a>
+                <a href="https://standardsbis.bsbedge.com" target="_blank"><i class="fa-solid fa-arrow-up-right-from-square"></i> BIS Official Portal</a>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/static/app.js"></script>
+</body>
+</html>
