@@ -20,7 +20,8 @@ SEED_STANDARDS = [
         "committee_code": "FAD 24",
         "domain": "Food and Agriculture",
         "status": "Reaffirmed (2019)",
-        "is_mandatory": True,
+        "is_mandatory": False,
+        "certification_scheme": "Voluntary ISI Scheme-I",
         "scope": "This standard prescribes the requirements, methods of sampling and test for biscuits baked from dough containing essential ingredients with or without the addition of optional ingredients.",
         "preview_url": "https://standardsbis.bsbedge.com/BIS_Preview.aspx?id=1011_2002_reff2019",
         "source_url": "https://standardsbis.bsbedge.com/BIS_searchstandard.aspx?Standard_Number=IS+1011&id=1012",
@@ -55,7 +56,8 @@ SEED_STANDARDS = [
         "committee_code": "FAD 15",
         "domain": "Food and Agriculture",
         "status": "Reaffirmed (2018)",
-        "is_mandatory": True,
+        "is_mandatory": False,
+        "certification_scheme": "Code of Practice / Design Standard",
         "scope": "This code prescribes the hygienic conditions required for establishing and maintaining large scale biscuit manufacturing and commercial bakery processing units.",
         "preview_url": "https://standardsbis.bsbedge.com/BIS_Preview.aspx?id=5059",
         "source_url": "https://standardsbis.bsbedge.com/BIS_searchstandard.aspx?keyword=5059&id=0",
@@ -293,7 +295,8 @@ SEED_STANDARDS = [
         "committee_code": "CED 2",
         "domain": "Civil Engineering",
         "status": "Reaffirmed (2021)",
-        "is_mandatory": True,
+        "is_mandatory": False,
+        "certification_scheme": "Code of Practice / Design Standard",
         "scope": "Deals with general structural use of plain and reinforced concrete in buildings and civil engineering works. Covers materials, structural design, durability, workmanship and inspection.",
         "preview_url": "https://standardsbis.bsbedge.com/BIS_Preview.aspx?id=456",
         "source_url": "https://standardsbis.bsbedge.com/BIS_searchstandard.aspx?keyword=456&id=0",
@@ -606,6 +609,64 @@ SEED_STANDARDS = [
             "is_quality_spec": True,
             "safety_justification": "Zinc coating adhesion and mass verification to ensure corrosion barrier and prevent degradation.",
             "testing_methods_summary": "Coating mass test, triple spot test, bend test."
+        }
+    },
+
+    # --- PRECIOUS METALS & HALLMARKING (DoCA MANDATE) ---
+    {
+        "standard_number": "IS 1417:2016",
+        "title": "Gold and Gold Alloys, Jewellery/Artefacts - Fineness and Marking - Specification",
+        "publication_year": 2016,
+        "reaffirmed_year": 2021,
+        "ics_code": "39.060",
+        "committee_code": "MTD 10",
+        "domain": "Precious Metals and Hallmarking",
+        "status": "Active & Reaffirmed (2021)",
+        "is_mandatory": True,
+        "certification_scheme": "Mandatory Hallmarking Scheme (DoCA)",
+        "scope": "Specifies requirements for fineness of gold and gold alloys in jewellery and artefacts, and mandatory hallmarking requirements comprising the BIS logo, fineness purity mark (e.g., 22K916, 18K750, 14K585), and 6-digit alphanumeric Hallmark Unique Identification (HUID) under Central Government Orders.",
+        "preview_url": "https://standardsbis.bsbedge.com/BIS_Preview.aspx?id=1417_2016",
+        "source_url": "https://standardsbis.bsbedge.com/BIS_searchstandard.aspx?keyword=1417&id=0",
+        "references": [
+            {"standard_number": "IS 1418", "year": 2009, "title": "Assaying of Gold in Gold Bullion, Gold Alloys and Gold Jewellery/Artefacts", "reference_type": "testing"},
+            {"standard_number": "IS 2790", "year": 1979, "title": "Guidelines for manufacture of 14, 18 and 22 carat gold alloys", "reference_type": "normative"}
+        ],
+        "amendments": [
+            {"amendment_number": "Amd 1", "amendment_year": 2020, "title": "Mandatory 6-digit HUID Laser Marking Protocol", "status": "Active"}
+        ],
+        "safety_testing": {
+            "is_safety_related": True,
+            "is_testing_related": True,
+            "is_sampling_related": True,
+            "is_quality_spec": True,
+            "safety_justification": "Consumer protection against under-caratage and fraudulent purity claims; ensures traceably verified precious metal purity.",
+            "testing_methods_summary": "Fire assay cupellation testing, X-ray fluorescence (XRF) non-destructive gold assay."
+        }
+    },
+    {
+        "standard_number": "IS 2112:2014",
+        "title": "Silver and Silver Alloys, Jewellery/Artefacts - Fineness and Marking - Specification",
+        "publication_year": 2014,
+        "reaffirmed_year": 2019,
+        "ics_code": "39.060",
+        "committee_code": "MTD 10",
+        "domain": "Precious Metals and Hallmarking",
+        "status": "Active & Reaffirmed (2019)",
+        "is_mandatory": False,
+        "certification_scheme": "Voluntary Hallmarking Scheme",
+        "scope": "Specifies requirements for fineness of silver and silver alloys in jewellery and artefacts, hallmarking grades (999, 970, 925, 900, 835, 800), and assay marking protocols.",
+        "preview_url": "https://standardsbis.bsbedge.com/BIS_Preview.aspx?id=2112_2014",
+        "source_url": "https://standardsbis.bsbedge.com/BIS_searchstandard.aspx?keyword=2112&id=0",
+        "references": [
+            {"standard_number": "IS 2113", "year": 2014, "title": "Assaying of Silver in Silver Bullion, Silver Alloys and Silver Jewellery", "reference_type": "testing"}
+        ],
+        "safety_testing": {
+            "is_safety_related": False,
+            "is_testing_related": True,
+            "is_sampling_related": True,
+            "is_quality_spec": True,
+            "safety_justification": "Third-party certification of silver fineness grades.",
+            "testing_methods_summary": "Potentiometric titration method, gravimetric assay."
         }
     }
 ]

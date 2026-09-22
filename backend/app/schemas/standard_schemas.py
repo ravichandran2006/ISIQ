@@ -110,6 +110,9 @@ class RecommendationItem(BaseModel):
     safety_relevance: str
     testing_relevance: str
     is_mandatory: bool = False
+    mandate_type: Optional[str] = "QCO"
+    governing_order: Optional[str] = None
+    mandate_reason: Optional[str] = None
     source_url: Optional[str] = None
     preview_url: Optional[str] = None
     normative_references: List[ReferenceSchema] = []
@@ -124,3 +127,6 @@ class RecommendationResponse(BaseModel):
     allied_references: List[ReferenceSchema]
     safety_compliance_guidelines: List[str]
     processing_time_ms: float
+    detected_language: Optional[str] = "en"
+    translated_query: Optional[str] = None
+    compliance_summary: Optional[Dict[str, Any]] = None

@@ -1,7 +1,9 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
 from sqlalchemy.orm import Session
+import os
 import io
+import time
 import pypdf
 
 from backend.app.database.connection import get_db
@@ -16,19 +18,36 @@ from backend.app.schemas.standard_schemas import (
 )
 from backend.app.retrieval.search_engine import HybridSearchEngine
 from backend.app.recommendation.engine import ProcurementRecommendationEngine
+from backend.app.recommendation.llm_explainer import LLMStandardsExplainer, ExplainStandardRequest, ExplainStandardResponse
 from backend.app.ingestion.crawler import BISCrawler
 from backend.app.ingestion.pipeline import IngestionPipeline
+from backend.app.nlp.indic_translator import IndicTranslator
+from pydantic import BaseModel
+
+class TranslationRequest(BaseModel):
+    text: str
+    target_language: str
+    source_language: Optional[str] = "en"
+
+class TranslationResponse(BaseModel):
+    original_text: str
+    translated_text: str
+    source_language: str
+    target_language: str
 
 router = APIRouter()
 
 @router.get("/health", tags=["System"])
 def health_check(db: Session = Depends(get_db)):
     std_count = db.query(Standard).count()
+    groq_key = os.getenv("GROQ_API_KEY", "").strip()
     return {
         "status": "healthy",
         "service": "AI-Powered Indian Standards Recommendation Engine (SIH26108)",
         "total_standards_indexed": std_count,
         "database_connected": True,
+        "groq_configured": bool(groq_key and groq_key != "your_groq_api_key_here"),
+        "default_llm_provider": os.getenv("DEFAULT_LLM_PROVIDER", "groq"),
         "timestamp": time.time()
     }
 
@@ -112,10 +131,8 @@ def get_standard_amendments(
         ]
     return []
 
-
 @router.get("/classifications", tags=["Classifications"])
 def list_classifications(db: Session = Depends(get_db)):
-    # Group standards by domain
     domains = db.query(Standard.domain).distinct().all()
     committees = db.query(Standard.committee_code).distinct().all()
     return {
@@ -126,21 +143,97 @@ def list_classifications(db: Session = Depends(get_db)):
 @router.post("/search", tags=["Retrieval"])
 def search_standards(body: SearchQuery, db: Session = Depends(get_db)):
     search_engine = HybridSearchEngine(db)
+    detected_lang = IndicTranslator.detect_language(body.query)
+    search_query = body.query
+    translated_query = None
+    if detected_lang != "en":
+        translated_query, _ = IndicTranslator.translate_to_english(body.query, source_lang=detected_lang)
+        search_query = translated_query
+
     results = search_engine.search(
-        query=body.query,
+        query=search_query,
         domain_filter=body.domain,
         top_k=body.limit
     )
     return {
         "query": body.query,
+        "detected_language": detected_lang,
+        "translated_query": translated_query,
         "total_results": len(results),
         "results": results
     }
 
 @router.post("/recommend", response_model=RecommendationResponse, tags=["Recommendation"])
 def recommend_standards(body: ProcurementRequirementRequest, db: Session = Depends(get_db)):
+    detected_lang = IndicTranslator.detect_language(body.requirement)
+    translated_query = None
+    exec_requirement = body.requirement
+    if detected_lang != "en":
+        raw_translated, _ = IndicTranslator.translate_to_english(body.requirement, source_lang=detected_lang)
+        from backend.app.recommendation.nlp_extractor import ProcurementNLPExtractor
+        exec_requirement = ProcurementNLPExtractor.canonicalize_query(raw_translated)
+        translated_query = exec_requirement
+
+    internal_req = ProcurementRequirementRequest(
+        requirement=exec_requirement,
+        domain_hint=body.domain_hint,
+        top_k=body.top_k,
+        skip_live_crawl=body.skip_live_crawl
+    )
+
     engine = ProcurementRecommendationEngine(db)
-    return engine.recommend(body)
+    res = engine.recommend(internal_req)
+    # Restore original natural query in response metadata
+    res.query = body.requirement
+    res.detected_language = detected_lang
+    res.translated_query = translated_query
+    return res
+
+@router.post("/translate", response_model=TranslationResponse, tags=["Multilingual"])
+def translate_text(body: TranslationRequest):
+    """
+    Multilingual translation service supporting 16 Indian languages.
+    Used by the frontend to translate explanations, summaries, and procurement requirements.
+    """
+    target = body.target_language.lower()
+    source = (body.source_language or "en").lower()
+
+    if target == source:
+        return TranslationResponse(
+            original_text=body.text,
+            translated_text=body.text,
+            source_language=source,
+            target_language=target
+        )
+
+    if target == "en":
+        trans, detected = IndicTranslator.translate_to_english(body.text, source_lang=source)
+    else:
+        # First ensure English base if text is in another Indian language
+        en_base = body.text
+        if source != "en":
+            en_base, _ = IndicTranslator.translate_to_english(body.text, source_lang=source)
+        trans = IndicTranslator.translate_from_english(en_base, target_lang=target)
+        detected = source
+
+    return TranslationResponse(
+        original_text=body.text,
+        translated_text=trans,
+        source_language=source,
+        target_language=target
+    )
+
+@router.post("/explain-standard", response_model=ExplainStandardResponse, tags=["AI Explanation"])
+async def explain_standard_recommendation(
+    body: ExplainStandardRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    AI-powered grounded explanation service.
+    Explains exactly why an Indian Standard is recommended for a technical procurement specification.
+    Supports Google Gemini, Groq, OpenAI, and StandIQ Grounded Intelligence.
+    """
+    return await LLMStandardsExplainer.explain(body)
 
 @router.post("/ingestion/crawl-and-ingest", tags=["Ingestion"])
 def run_ingestion_crawl(keyword: str = Query(..., description="Keyword to search on BIS portal"), db: Session = Depends(get_db)):
@@ -187,11 +280,18 @@ async def upload_document(file: UploadFile = File(...)):
         except Exception as e:
             text = str(contents)
             
+    clean_text = text.strip()
+    detected_lang = IndicTranslator.detect_language(clean_text)
+    translated_summary = ""
+    if detected_lang != "en" and clean_text:
+        translated_summary, _ = IndicTranslator.translate_to_english(clean_text[:2000], source_lang=detected_lang)
+
     return {
         "filename": filename,
         "size_bytes": len(contents),
         "page_count": page_count,
-        "extracted_text": text.strip()
+        "extracted_text": clean_text,
+        "detected_language": detected_lang,
+        "language_name": IndicTranslator.LANGUAGE_NAMES.get(detected_lang, "English"),
+        "translated_summary": translated_summary
     }
-
-

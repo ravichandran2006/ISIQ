@@ -43,7 +43,8 @@ class HybridSearchEngine:
         top_k: int = 10,
         detected_is_numbers: List[str] = None
     ) -> List[Dict[str, Any]]:
-        query_clean = query.strip()
+        from backend.app.recommendation.nlp_extractor import ProcurementNLPExtractor
+        query_clean = ProcurementNLPExtractor.canonicalize_query(query.strip())
         if not query_clean:
             return []
 

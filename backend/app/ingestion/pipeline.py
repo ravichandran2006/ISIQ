@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from backend.app.database.models import Standard, StandardReference, Amendment, SafetyTestingMetadata, IngestionLog
 from backend.app.ingestion.crawler import BISCrawler
+from backend.app.recommendation.certification_engine import CertificationRequirementEngine
 
 class IngestionPipeline:
     """
@@ -18,6 +19,16 @@ class IngestionPipeline:
     def ingest_standard_record(self, record: Dict[str, Any]) -> Standard:
         std_num = record["standard_number"]
         
+        # Determine dynamic certification scheme and mandatory status if not explicitly in record
+        cert_info = CertificationRequirementEngine.evaluate_standard(
+            standard_number=std_num,
+            title=record.get("title", ""),
+            scope=record.get("scope", ""),
+            domain=record.get("domain", "")
+        )
+        scheme = record.get("certification_scheme") or cert_info["certification_scheme"]
+        is_mandatory = record.get("is_mandatory", cert_info["is_mandatory"])
+
         # Check if already exists
         existing = self.db.query(Standard).filter(Standard.standard_number == std_num).first()
         if existing:
@@ -29,7 +40,8 @@ class IngestionPipeline:
             existing.revision_text = record.get("revision_text", existing.revision_text)
             existing.supersedes_is = record.get("supersedes_is", existing.supersedes_is)
             existing.superseded_by_is = record.get("superseded_by_is", existing.superseded_by_is)
-            existing.certification_scheme = record.get("certification_scheme", existing.certification_scheme or "Mandatory ISI Scheme-I")
+            existing.certification_scheme = scheme
+            existing.is_mandatory = is_mandatory
             existing.scope = record.get("scope", existing.scope)
             existing.ics_code = record.get("ics_code", existing.ics_code)
             existing.committee_code = record.get("committee_code", existing.committee_code)
@@ -50,7 +62,8 @@ class IngestionPipeline:
                 revision_text=record.get("revision_text", "Original Publication"),
                 supersedes_is=record.get("supersedes_is"),
                 superseded_by_is=record.get("superseded_by_is"),
-                certification_scheme=record.get("certification_scheme", "Mandatory ISI Scheme-I"),
+                certification_scheme=scheme,
+                is_mandatory=is_mandatory,
                 scope=record.get("scope"),
                 ics_code=record.get("ics_code"),
                 committee_code=record.get("committee_code"),

@@ -36,8 +36,12 @@ class StandardsReranker:
                 bonus += 0.25
 
             # 3. Product title overlap
-            title_tokens = set(cand_title.split())
-            overlap = len(query_tokens.intersection(title_tokens))
+            from backend.app.recommendation.nlp_extractor import ProcurementNLPExtractor
+            q_canonical = ProcurementNLPExtractor.canonicalize_query(query)
+            t_canonical = ProcurementNLPExtractor.canonicalize_query(cand_title)
+            q_tokens = set(q_canonical.split())
+            title_tokens = set(t_canonical.split())
+            overlap = len(q_tokens.intersection(title_tokens))
             bonus += min(0.3, overlap * 0.1)
 
             # 4. Active status boost over withdrawn
@@ -50,9 +54,10 @@ class StandardsReranker:
             final_score = base_score + bonus
             cand["final_score"] = round(final_score, 4)
 
-            # Determine relevance tier
+            # Determine relevance tier dynamically based on actual mandatory status
+            is_mand = cand.get("is_mandatory", False)
             if final_score >= 0.8:
-                cand["relevance_tier"] = "Primary Mandatory Standard"
+                cand["relevance_tier"] = "Primary Mandatory Standard" if is_mand else "Primary Recommended Standard (Voluntary)"
             elif final_score >= 0.45:
                 cand["relevance_tier"] = "Applicable Standard"
             else:

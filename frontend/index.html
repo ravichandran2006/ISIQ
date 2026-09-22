@@ -3,92 +3,224 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StandIQ — Right Standards. Right Tenders. | Bureau of Indian Standards Discovery Engine</title>
+    <title>StandIQ — Indian Standards Recommendation System | Bureau of Indian Standards</title>
     <meta name="description" content="AI-Powered Indian Standards Discovery & Recommendation Engine for Government Procurement and GeM Tenders.">
-    <!-- Google Fonts -->
+    <!-- Google Fonts: Inter & Outfit & JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    <!-- Font Awesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@1,500;1,600&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- StandIQ Custom Stylesheet -->
     <link rel="stylesheet" href="/static/styles.css">
+    <!-- StandIQ Multilingual i18n Support (16 Indian Languages) -->
+    <script src="/static/i18n.js"></script>
 </head>
 <body>
     <div class="app-wrapper">
-        <!-- Top Navigation Bar -->
-        <header class="top-nav">
-            <div class="nav-brand-group">
-                <div class="brand-logo-container" id="nav-brand-home">
-                    <div class="brand-shield-icon">
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="shield-svg">
-                            <path d="M12 2L4 5V11.5C4 16.5 7.5 21 12 22C16.5 21 20 16.5 20 11.5V5L12 2Z" fill="#1e40af" stroke="#2563eb" stroke-width="1.5"/>
-                            <path d="M9 12L11 14L15 9" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- ==========================================================================
+             TOP HEADER BAR (GOVERNMENT OF INDIA & STANDIQ BRANDING)
+             ========================================================================== -->
+        <header class="govt-top-header">
+            <!-- Left: Government of India Emblem & Brand -->
+            <div class="header-left-brand">
+                <!-- Ashoka Stambh Lion Capital Emblem -->
+                <div class="emblem-container" title="Government of India / भारत सरकार">
+                    <svg class="emblem-svg" viewBox="0 0 100 135" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Simplified regal Lion Capital vector -->
+                        <path d="M50 8C43 8 38 12 36 17C33 16 30 17 28 20C25 24 26 29 27 33C24 35 21 39 21 44C21 50 25 55 29 57C29 60 30 63 32 65C34 67 38 69 42 70L42 78H58L58 70C62 69 66 67 68 65C70 63 71 60 71 57C75 55 79 50 79 44C79 39 76 35 73 33C74 29 75 24 72 20C70 17 67 16 64 17C62 12 57 8 50 8Z" fill="#1e293b" opacity="0.88"/>
+                        <!-- Center Lion details -->
+                        <circle cx="50" cy="22" r="6" fill="#f8fafc"/>
+                        <circle cx="41" cy="25" r="2.5" fill="#1e293b"/>
+                        <circle cx="59" cy="25" r="2.5" fill="#1e293b"/>
+                        <path d="M47 28H53L50 32L47 28Z" fill="#1e293b"/>
+                        <path d="M44 35C47 37 53 37 56 35" stroke="#1e293b" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M45 42H55V49H45V42Z" fill="#334155"/>
+                        <!-- Left Lion -->
+                        <path d="M30 36C28 39 28 44 31 48C34 46 37 42 36 38" stroke="#1e293b" stroke-width="2"/>
+                        <!-- Right Lion -->
+                        <path d="M70 36C72 39 72 44 69 48C66 46 63 42 64 38" stroke="#1e293b" stroke-width="2"/>
+                        <!-- Abacus Platform with Wheel & Bull/Horse -->
+                        <rect x="15" y="78" width="70" height="12" rx="2" fill="#0f172a"/>
+                        <!-- Ashoka Chakra on abacus -->
+                        <circle cx="50" cy="84" r="5" fill="#ffffff"/>
+                        <circle cx="50" cy="84" r="4.2" stroke="#0f2b48" stroke-width="0.8"/>
+                        <circle cx="50" cy="84" r="1.2" fill="#0f2b48"/>
+                        <!-- Side animals representation -->
+                        <circle cx="28" cy="84" r="2.5" fill="#94a3b8"/>
+                        <circle cx="72" cy="84" r="2.5" fill="#94a3b8"/>
+                        <!-- Inverted Lotus Base -->
+                        <path d="M18 90C25 102 38 106 50 106C62 106 75 102 82 90H18Z" fill="#334155"/>
+                        <path d="M25 90C30 99 40 102 50 102C60 102 70 99 75 90" stroke="#f1f5f9" stroke-width="1.2" fill="none"/>
+                        <line x1="50" y1="90" x2="50" y2="104" stroke="#f1f5f9" stroke-width="1.2"/>
+                        <line x1="38" y1="90" x2="42" y2="102" stroke="#f1f5f9" stroke-width="1"/>
+                        <line x1="62" y1="90" x2="58" y2="102" stroke="#f1f5f9" stroke-width="1"/>
+                        <!-- Plinth -->
+                        <rect x="22" y="106" width="56" height="5" rx="1" fill="#0f172a"/>
+                    </svg>
+                    <div class="emblem-text-group">
+                        <span class="emblem-hi">भारत सरकार</span>
+                        <span class="emblem-en">Government of India</span>
+                    </div>
+                </div>
+
+                <div class="brand-v-divider"></div>
+
+                <!-- StandIQ Brand Logo & System Title -->
+                <div class="brand-identity-wrap" id="nav-brand-home" title="StandIQ - Bureau of Indian Standards Discovery Engine">
+                    <div class="standiq-logo-icon">
+                        <!-- Classical Institution / Standards Pillar in Hexagon Shield -->
+                        <svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" class="standiq-hexagon-svg">
+                            <polygon points="22,3 41,13.5 41,30.5 22,41 3,30.5 3,13.5" fill="#0f2b48" stroke="#1d4ed8" stroke-width="2"/>
+                            <!-- Classical Temple / Standards Pediment -->
+                            <polygon points="22,11 12,17 32,17" fill="#ffffff"/>
+                            <rect x="11" y="17" width="22" height="2" fill="#93c5fd"/>
+                            <!-- 4 Pillars -->
+                            <rect x="14" y="20" width="2.5" height="9" rx="0.5" fill="#ffffff"/>
+                            <rect x="19" y="20" width="2.5" height="9" rx="0.5" fill="#ffffff"/>
+                            <rect x="24" y="20" width="2.5" height="9" rx="0.5" fill="#ffffff"/>
+                            <rect x="29" y="20" width="2.5" height="9" rx="0.5" fill="#ffffff"/>
+                            <!-- Plinth base -->
+                            <rect x="11" y="29.5" width="22" height="2.5" rx="0.5" fill="#ffffff"/>
                         </svg>
                     </div>
-                    <div class="brand-text">
-                        <div class="brand-title">StandIQ</div>
-                        <div class="brand-tagline">Right Standards. Right Tenders.</div>
+                    <div class="standiq-brand-details">
+                        <div class="standiq-main-title">StandIQ</div>
+                        <div class="standiq-sub-title">Indian Standards Recommendation System</div>
+                        <div class="standiq-motto">Right Standards. Right Procurement. A Stronger India.</div>
                     </div>
                 </div>
             </div>
 
-            <nav class="top-menu">
-                <button class="top-nav-item active" data-view="dashboard" id="topnav-dashboard">
-                    <i class="fa-solid fa-house"></i> Home
-                </button>
-                <button class="top-nav-item" data-view="search" id="topnav-search">
-                    <i class="fa-solid fa-magnifying-glass"></i> Search
-                </button>
-                <button class="top-nav-item" data-view="upload" id="topnav-upload">
-                    <i class="fa-solid fa-file-arrow-up"></i> Upload Document
-                </button>
-                <button class="top-nav-item" data-view="history" id="topnav-history">
-                    <i class="fa-solid fa-clock-rotate-left"></i> History
-                </button>
-                <button class="top-nav-item" data-view="saved" id="topnav-saved">
-                    <i class="fa-solid fa-bookmark"></i> Saved Results
-                </button>
-            </nav>
+            <!-- Center-Right: Viksit Bharat Banner with Rashtrapati Bhavan / Parliament Silhouette -->
+            <div class="header-center-banner">
+                <div class="viksit-bharat-group">
+                    <!-- Tricolor Ribbon Wave -->
+                    <div class="tiranga-wave-ribbon">
+                        <span class="ribbon-orange"></span>
+                        <span class="ribbon-white"></span>
+                        <span class="ribbon-green"></span>
+                    </div>
+                    <div class="viksit-text-box">
+                        <span class="viksit-title">Viksit Bharat</span>
+                        <span class="viksit-sub">Through Quality Infrastructure</span>
+                    </div>
+                </div>
 
-            <div class="top-user-group">
-                <button class="theme-toggle-btn" id="btn-theme-toggle" title="Toggle Dark / Light Mode" aria-label="Toggle theme">
+                <!-- Architectural Backdrop (Rashtrapati Bhavan / Parliament Colonnade Silhouette) -->
+                <div class="parliament-backdrop" aria-hidden="true">
+                    <svg viewBox="0 0 280 70" preserveAspectRatio="none" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Subtle golden-sand colonnade & dome -->
+                        <path d="M140 10C132 10 126 15 124 20L122 28H158L156 20C154 15 148 10 140 10Z" fill="#b48348" opacity="0.35"/>
+                        <circle cx="140" cy="6" r="2.5" fill="#b48348" opacity="0.45"/>
+                        <rect x="120" y="28" width="40" height="4" fill="#b48348" opacity="0.3"/>
+                        <rect x="40" y="32" width="200" height="3" fill="#b48348" opacity="0.25"/>
+                        <!-- Colonnade Pillars -->
+                        <g opacity="0.28" stroke="#a16207" stroke-width="1.8">
+                            <line x1="45" y1="35" x2="45" y2="66"/>
+                            <line x1="57" y1="35" x2="57" y2="66"/>
+                            <line x1="69" y1="35" x2="69" y2="66"/>
+                            <line x1="81" y1="35" x2="81" y2="66"/>
+                            <line x1="93" y1="35" x2="93" y2="66"/>
+                            <line x1="105" y1="35" x2="105" y2="66"/>
+                            <line x1="117" y1="35" x2="117" y2="66"/>
+                            <line x1="129" y1="35" x2="129" y2="66"/>
+                            <line x1="151" y1="35" x2="151" y2="66"/>
+                            <line x1="163" y1="35" x2="163" y2="66"/>
+                            <line x1="175" y1="35" x2="175" y2="66"/>
+                            <line x1="187" y1="35" x2="187" y2="66"/>
+                            <line x1="199" y1="35" x2="199" y2="66"/>
+                            <line x1="211" y1="35" x2="211" y2="66"/>
+                            <line x1="223" y1="35" x2="223" y2="66"/>
+                            <line x1="235" y1="35" x2="235" y2="66"/>
+                        </g>
+                        <!-- Base Steps -->
+                        <rect x="30" y="66" width="220" height="3" fill="#b48348" opacity="0.35"/>
+                        <rect x="20" y="69" width="240" height="2" fill="#b48348" opacity="0.45"/>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Far Right: User Profile & Actions -->
+            <div class="header-right-user">
+                <!-- Indian Flag Icon Pin -->
+                <div class="flag-pin-badge" title="Republic of India">
+                    <span class="flag-saffron"></span>
+                    <span class="flag-white"><span class="flag-chakra-dot"></span></span>
+                    <span class="flag-green"></span>
+                </div>
+
+                <!-- Language Selector Dropdown (Supporting 16 Indian Languages) -->
+                <div class="header-lang-picker" title="Change Language / भाषा बदलें">
+                    <i class="fa-solid fa-language lang-globe-icon"></i>
+                    <select id="header-lang-select" class="lang-dropdown" aria-label="Select Portal Language">
+                        <option value="en">English</option>
+                        <option value="hi">हिन्दी (Hindi)</option>
+                        <option value="ta">தமிழ் (Tamil)</option>
+                        <option value="te">తెలుగు (Telugu)</option>
+                        <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                        <option value="ml">മലയാളം (Malayalam)</option>
+                        <option value="bn">বাংলা (Bengali)</option>
+                        <option value="mr">मराठी (Marathi)</option>
+                        <option value="gu">ગુજરાતી (Gujarati)</option>
+                        <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+                        <option value="or">ଓଡ଼ିଆ (Odia)</option>
+                        <option value="as">অসমীয়া (Assamese)</option>
+                        <option value="ur">اردو (Urdu)</option>
+                        <option value="sa">संस्कृतम् (Sanskrit)</option>
+                        <option value="ne">नेपाली (Nepali)</option>
+                        <option value="mai">मैथिली (Maithili)</option>
+                    </select>
+                </div>
+
+                <!-- User Profile Pill -->
+                <div class="user-profile-widget" id="btn-open-profile" title="Click to view officer profile & security clearance">
+                    <div class="user-avatar-circle">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <div class="user-meta-info">
+                        <div class="user-officer-name">
+                            <span>Ravi M</span>
+                            <i class="fa-solid fa-chevron-down caret-mini"></i>
+                        </div>
+                        <div class="user-officer-role" data-i18n="officer_role">Procurement Officer</div>
+                    </div>
+                </div>
+
+                <!-- Hidden Theme Toggle for Accessibility / Settings -->
+                <button class="theme-toggle-btn hidden" id="btn-theme-toggle" aria-label="Toggle theme">
                     <i class="fa-solid fa-moon theme-icon-moon"></i>
                     <i class="fa-solid fa-sun theme-icon-sun hidden"></i>
                 </button>
-                <div class="profile-avatar-badge" id="btn-open-profile" title="Ravichandran M. (GeM / CPWD Senior Procurement Specialist)">
-                    <span class="avatar-initials">RM</span>
-                    <span class="avatar-shield-pip">
-                        <i class="fa-solid fa-shield-check"></i>
-                    </span>
-                </div>
             </div>
         </header>
 
-        <!-- Body Layout (Sidebar + Main Viewport) -->
+        <!-- ==========================================================================
+             MAIN CONTAINER (SIDEBAR + CONTENT VIEWPORT)
+             ========================================================================== -->
         <div class="main-body-container">
             <!-- Left Sidebar -->
             <aside class="left-sidebar">
-                <div class="sidebar-menu">
+                <nav class="sidebar-menu">
                     <button class="sidebar-item active" data-view="dashboard" id="side-dashboard">
-                        <i class="fa-solid fa-table-cells-large"></i>
-                        <span>Dashboard</span>
+                        <i class="fa-solid fa-house"></i>
+                        <span data-i18n="nav_home">Dashboard</span>
                     </button>
                     <button class="sidebar-item" data-view="search" id="side-search">
                         <i class="fa-solid fa-magnifying-glass"></i>
-                        <span>Search Standards</span>
+                        <span data-i18n="nav_search">Search Standards</span>
                     </button>
                     <button class="sidebar-item" data-view="upload" id="side-upload">
                         <i class="fa-solid fa-file-arrow-up"></i>
-                        <span>Upload Document</span>
+                        <span data-i18n="nav_extract">Upload Document</span>
                     </button>
                     <button class="sidebar-item" data-view="history" id="side-history">
                         <i class="fa-solid fa-clock-rotate-left"></i>
-                        <span>History</span>
+                        <span data-i18n="nav_history">History</span>
                     </button>
                     <button class="sidebar-item" data-view="saved" id="side-saved">
                         <i class="fa-solid fa-bookmark"></i>
-                        <span>Saved Results</span>
+                        <span data-i18n="nav_favorites">Saved Results</span>
                     </button>
                     <button class="sidebar-item" data-view="alerts" id="side-alerts">
                         <i class="fa-solid fa-bell"></i>
@@ -101,105 +233,219 @@
                     </button>
                     <button class="sidebar-item" data-view="guide" id="side-guide">
                         <i class="fa-regular fa-circle-question"></i>
-                        <span>Help & Guide</span>
+                        <span data-i18n="nav_help">Help & Support</span>
                     </button>
-                    <button class="sidebar-item logout-item" id="side-logout">
-                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
-                        <span>Logout</span>
-                    </button>
-                </div>
+                </nav>
 
+                <!-- Sidebar Bottom Graphic: Map of India & Motto -->
                 <div class="sidebar-footer-watermark">
-                    <div class="footer-shield-icon">
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
-                            <path d="M12 2L4 5V11.5C4 16.5 7.5 21 12 22C16.5 21 20 16.5 20 11.5V5L12 2Z" fill="#2563eb" fill-opacity="0.15" stroke="#2563eb" stroke-width="1.5"/>
-                            <path d="M12 7V16M8.5 11.5H15.5" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round"/>
+                    <div class="india-map-graphic">
+                        <!-- Clean vector outline map of India in warm sand/orange tone -->
+                        <svg viewBox="0 0 160 180" fill="none" xmlns="http://www.w3.org/2000/svg" class="india-map-svg">
+                            <path d="M72 10C73 14 77 15 79 19C81 23 80 27 82 30C86 31 90 32 94 36C95 39 93 42 96 45C99 47 104 46 107 48C108 52 105 56 104 59C102 63 98 65 97 69C97 73 100 76 103 79C106 82 110 84 114 86C119 88 125 89 130 90C136 91 141 93 144 97C145 101 142 105 141 109C139 113 140 118 138 122C135 125 130 125 126 127C122 129 118 132 114 135C110 138 107 142 104 146C99 152 94 159 88 165C85 169 82 173 78 177C76 177 74 175 73 172C70 166 69 159 66 153C63 146 61 139 58 132C55 126 51 120 48 114C45 108 41 103 37 98C33 93 29 89 26 84C23 80 20 75 18 70C17 65 19 60 21 55C24 50 28 47 32 44C36 41 41 39 46 38C51 37 56 35 60 32C64 29 66 23 68 18C69 14 70 11 72 10Z" 
+                                fill="#d97706" fill-opacity="0.18" stroke="#b45309" stroke-width="1.2" stroke-linejoin="round"/>
                         </svg>
                     </div>
-                    <div class="footer-bis-note">SIH26108 Grounded Engine</div>
+                    <div class="sidebar-quality-motto">
+                        <div>Quality</div>
+                        <div>Standards</div>
+                        <div>Stronger</div>
+                        <div>India</div>
+                    </div>
+                    <div class="sidebar-tiranga-bar">
+                        <span class="t-saffron"></span>
+                        <span class="t-white"></span>
+                        <span class="t-green"></span>
+                    </div>
                 </div>
             </aside>
 
-            <!-- Main Content Area -->
+            <!-- Main Viewport Area -->
             <main class="content-viewport">
-                <!-- VIEW 1: STANDIQ DASHBOARD / RECOMMENDATION RESULTS (Default Active View) -->
+                <!-- ==========================================================================
+                     TOP GLOBAL SEARCH & QUICK ACTION STRIP
+                     ========================================================================== -->
+                <div class="top-action-search-strip">
+                    <div class="global-search-container">
+                        <i class="fa-solid fa-magnifying-glass search-leading-icon"></i>
+                        <input type="text" id="top-search-input" class="global-search-input" 
+                               placeholder="Search standards, keywords, or paste procurement requirements (Press Enter to Search)..."
+                               value="Stainless steel cable tray with perforated type for electrical wiring in industrial applications">
+                    </div>
+
+                    <div class="quick-nav-actions">
+                        <button class="btn-quick-action" id="btn-top-upload" data-view="upload" title="Upload tender documents">
+                            <i class="fa-solid fa-file-arrow-up"></i>
+                            <span>Upload Document</span>
+                        </button>
+                        <button class="btn-quick-action" id="btn-top-history" data-view="history" title="View search history">
+                            <i class="fa-solid fa-clock-rotate-left"></i>
+                            <span>History</span>
+                        </button>
+                        <button class="btn-quick-action" id="btn-top-saved" data-view="saved" title="View bookmarked results">
+                            <i class="fa-solid fa-bookmark"></i>
+                            <span>Saved Results</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ==========================================================================
+                     VIEW 1: STANDIQ DASHBOARD / RECOMMENDATION RESULTS (Active View)
+                     ========================================================================== -->
                 <section id="view-dashboard" class="app-view active">
-                    <!-- Top Action Header Banner -->
-                    <div class="result-header-bar">
-                        <div class="result-header-left">
-                            <div class="success-icon-badge">
-                                <i class="fa-solid fa-circle-check"></i>
-                            </div>
-                            <div class="result-header-text">
-                                <h1 class="result-header-title">Recommendation Completed</h1>
-                                <p class="result-header-subtitle">Standards identified based on your procurement requirement</p>
-                            </div>
-                        </div>
-                        <div class="result-header-actions">
-                            <button class="btn-action-outline" id="btn-header-download-pdf">
-                                <i class="fa-solid fa-download"></i> Download Report (PDF)
-                            </button>
-                            <button class="btn-action-outline btn-action-spec" id="btn-header-tender-spec">
-                                <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Tender Specification
-                            </button>
-                            <button class="btn-action-primary" id="btn-header-new-search">
-                                <i class="fa-solid fa-magnifying-glass"></i> New Search
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Hero Card: YOUR REQUIREMENT -->
-                    <div class="card requirement-hero-card">
-                        <div class="hero-left-col">
-                            <div class="hero-req-header">
-                                <div class="req-icon-box">
-                                    <i class="fa-regular fa-file-lines"></i>
+                    <!-- HERO CARD: Welcome to StandIQ -->
+                    <div class="card welcome-hero-card">
+                        <div class="welcome-left-content">
+                            <h1 class="welcome-heading">Welcome to StandIQ</h1>
+                            <p class="welcome-subheading">Find the right Indian Standards for your procurement requirement</p>
+                            
+                            <div class="welcome-accent-row">
+                                <div class="welcome-tricolor-pill">
+                                    <span class="tp-orange"></span>
+                                    <span class="tp-white"></span>
+                                    <span class="tp-green"></span>
                                 </div>
-                                <div class="req-title-wrap">
-                                    <span class="req-badge-label">YOUR REQUIREMENT</span>
-                                    <h2 class="requirement-display-text" id="display-requirement-text">
-                                        Stainless steel cable tray with perforated type for electrical wiring in industrial applications
-                                    </h2>
-                                </div>
-                            </div>
-                            <div class="req-metadata-chips">
-                                <div class="meta-chip">
-                                    <i class="fa-solid fa-globe"></i>
-                                    <span>Language: <strong id="meta-lang">English</strong></span>
-                                </div>
-                                <div class="meta-chip">
-                                    <i class="fa-regular fa-file-lines"></i>
-                                    <span>Source: <strong id="meta-source">Text Input</strong></span>
-                                </div>
-                                <div class="meta-chip">
-                                    <i class="fa-regular fa-clock"></i>
-                                    <span>Searched on: <strong id="meta-date">28 May 2025, 11:30 AM</strong></span>
+                                <div class="welcome-taglines">
+                                    <span>Standardized Procurement</span>
+                                    <span class="tag-sep">|</span>
+                                    <span>Transparent Governance</span>
+                                    <span class="tag-sep">|</span>
+                                    <span>Developed India</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="hero-right-col">
-                            <div class="score-metric-box">
-                                <div class="score-metric-header">Best Match Score</div>
-                                <div class="score-number-row">
-                                    <div class="score-metric-text-group">
-                                        <span class="score-large-number" id="display-score-large">95%</span>
-                                        <span class="score-tier-label" id="display-score-tier">High Relevance</span>
-                                    </div>
-                                    <div class="score-progress-ring">
-                                        <svg class="ring-svg" viewBox="0 0 100 100">
-                                            <circle class="ring-bg" cx="50" cy="50" r="40"></circle>
-                                            <circle class="ring-fg" id="ring-score-circle" cx="50" cy="50" r="40"></circle>
-                                        </svg>
-                                        <span class="ring-center-text" id="ring-score-text">95%</span>
-                                    </div>
-                                </div>
+                        <div class="welcome-right-quote">
+                            <!-- Subtle Ashoka Chakra Watermark -->
+                            <div class="quote-chakra-watermark" aria-hidden="true">
+                                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="50" cy="50" r="46" stroke="#ea580c" stroke-width="1.5" stroke-dasharray="2 3"/>
+                                    <circle cx="50" cy="50" r="42" stroke="#ea580c" stroke-width="1"/>
+                                    <circle cx="50" cy="50" r="10" fill="#ea580c" fill-opacity="0.15" stroke="#ea580c" stroke-width="1.2"/>
+                                    <!-- 24 spokes -->
+                                    <g stroke="#ea580c" stroke-width="0.8">
+                                        <line x1="50" y1="8" x2="50" y2="92"/>
+                                        <line x1="8" y1="50" x2="92" y2="50"/>
+                                        <line x1="20.3" y1="20.3" x2="79.7" y2="79.7"/>
+                                        <line x1="20.3" y1="79.7" x2="79.7" y2="20.3"/>
+                                        <line x1="34.1" y1="12.6" x2="65.9" y2="87.4"/>
+                                        <line x1="12.6" y1="34.1" x2="87.4" y2="65.9"/>
+                                        <line x1="65.9" y1="12.6" x2="34.1" y2="87.4"/>
+                                        <line x1="87.4" y1="34.1" x2="12.6" y2="65.9"/>
+                                        <line x1="27.4" y1="15.8" x2="72.6" y2="84.2"/>
+                                        <line x1="15.8" y1="27.4" x2="84.2" y2="72.6"/>
+                                        <line x1="72.6" y1="15.8" x2="27.4" y2="84.2"/>
+                                        <line x1="84.2" y1="27.4" x2="15.8" y2="72.6"/>
+                                    </g>
+                                </svg>
+                            </div>
+                            <div class="quote-text-wrap">
+                                <div class="quote-italic">"Quality builds a stronger nation"</div>
+                                <div class="quote-underline-bar"></div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- 6-Metric Stat Summary Row -->
+                    <!-- CARD: Recommendation Completed & Requirement Overview -->
+                    <div class="card recommendation-master-card">
+                        <!-- Card Header Status Bar -->
+                        <div class="rec-card-header">
+                            <div class="rec-header-left">
+                                <div class="success-check-badge">
+                                    <i class="fa-solid fa-check"></i>
+                                </div>
+                                <div class="rec-header-text">
+                                    <h2 class="rec-status-title">Recommendation Completed</h2>
+                                    <p class="rec-status-subtitle">Standards identified based on your procurement requirement</p>
+                                </div>
+                            </div>
+
+                            <div class="rec-header-actions">
+                                <button class="btn-action-outline" id="btn-header-download-pdf">
+                                    <i class="fa-solid fa-download"></i>
+                                    <span>Download Report (PDF)</span>
+                                </button>
+                                <button class="btn-action-navy" id="btn-header-tender-spec">
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                    <span>Generate Tender Specification</span>
+                                </button>
+                                <button class="btn-action-outline hidden" id="btn-header-new-search">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                    <span>New Search</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Card Body: Your Requirement + Score Gauge -->
+                        <div class="rec-card-body">
+                            <!-- Left: Requirement Prompt & Meta -->
+                            <div class="req-content-col">
+                                <div class="req-title-strip">
+                                    <div class="req-doc-icon">
+                                        <i class="fa-regular fa-file-lines"></i>
+                                    </div>
+                                    <div class="req-text-wrap">
+                                        <span class="req-label-caps">Your Requirement</span>
+                                        <h3 class="requirement-display-text" id="display-requirement-text">
+                                            Stainless steel cable tray with perforated type for electrical wiring in industrial applications
+                                        </h3>
+                                    </div>
+                                </div>
+
+                                <div class="req-meta-tags-row">
+                                    <div class="req-meta-item">
+                                        <i class="fa-solid fa-globe"></i>
+                                        <span>Language: <strong id="meta-lang">English</strong></span>
+                                    </div>
+                                    <div class="req-meta-item">
+                                        <i class="fa-regular fa-file-lines"></i>
+                                        <span>Source: <strong id="meta-source">Text Input</strong></span>
+                                    </div>
+                                    <div class="req-meta-item">
+                                        <i class="fa-regular fa-clock"></i>
+                                        <span>Searched on: <strong id="meta-date">28 May 2025, 11:30 AM</strong></span>
+                                    </div>
+                                </div>
+
+                                <!-- Multilingual Indic Query Translation Strip -->
+                                <div id="indic-translation-strip" class="indic-translation-strip hidden">
+                                    <div class="indic-strip-icon"><i class="fa-solid fa-language"></i></div>
+                                    <div class="indic-strip-text">
+                                        <div class="indic-strip-top">
+                                            <span class="indic-strip-title" data-i18n="lang_detected">Query Language Detected:</span>
+                                            <span id="indic-orig-lang-badge" class="badge-indic-lang">हिन्दी (Hindi)</span>
+                                        </div>
+                                        <div id="indic-trans-details" class="indic-trans-details">
+                                            <span><strong data-i18n="lang_translated">Translated for BIS Search:</strong> "<span id="indic-trans-english"></span>"</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right: BIS Standard Life Cycle & Verification Widget -->
+                            <div class="score-card-col">
+                                <div class="score-box-inner lifecycle-status-box">
+                                    <div class="score-text-block">
+                                        <div class="score-box-label">BIS Standard Life Cycle</div>
+                                        <div class="score-huge-value" id="display-lifecycle-status" style="font-size: 19px; font-weight: 800; color: #EA580C; margin-top: 3px;">Active & Reaffirmed</div>
+                                        <div class="score-tier-badge" id="display-score-tier" style="background: #FFF4E6; color: #C2410C; border: 1px solid #FCD9B8; border-radius: 4px; padding: 2px 8px; font-size: 11.5px; font-weight: 700; width: fit-content; margin-top: 4px;"><i class="fa-solid fa-stamp"></i> Mandatory ISI Scheme-I</div>
+                                    </div>
+                                    <div class="lifecycle-gauge-indicator">
+                                        <div class="lifecycle-seal-badge">
+                                            <i class="fa-solid fa-certificate seal-icon"></i>
+                                            <span class="seal-text">BIS Verified</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ==========================================================================
+                         6-METRIC KPI SUMMARY STRIP
+                         ========================================================================== -->
                     <div class="stats-summary-grid">
+                        <!-- Stat 1 -->
                         <div class="stat-card">
                             <div class="stat-card-icon icon-blue">
                                 <i class="fa-solid fa-layer-group"></i>
@@ -211,9 +457,10 @@
                             </div>
                         </div>
 
+                        <!-- Stat 2 -->
                         <div class="stat-card">
                             <div class="stat-card-icon icon-green">
-                                <i class="fa-solid fa-file-shield"></i>
+                                <i class="fa-solid fa-link"></i>
                             </div>
                             <div class="stat-card-content">
                                 <div class="stat-card-label">Related Standards</div>
@@ -222,6 +469,7 @@
                             </div>
                         </div>
 
+                        <!-- Stat 3 -->
                         <div class="stat-card">
                             <div class="stat-card-icon icon-orange">
                                 <i class="fa-regular fa-calendar-check"></i>
@@ -233,17 +481,19 @@
                             </div>
                         </div>
 
+                        <!-- Stat 4 -->
                         <div class="stat-card">
                             <div class="stat-card-icon icon-purple">
-                                <i class="fa-solid fa-bullseye"></i>
+                                <i class="fa-solid fa-shield-halved"></i>
                             </div>
                             <div class="stat-card-content">
                                 <div class="stat-card-label">Compliance Checks</div>
-                                <div class="stat-card-value" id="stat-compliance-checks">4 / 4</div>
+                                <div class="stat-card-value" id="stat-compliance-checks">4/4</div>
                                 <div class="stat-card-sub">Applicable Identified</div>
                             </div>
                         </div>
 
+                        <!-- Stat 5 -->
                         <div class="stat-card">
                             <div class="stat-card-icon icon-cyan">
                                 <i class="fa-regular fa-clipboard"></i>
@@ -255,6 +505,7 @@
                             </div>
                         </div>
 
+                        <!-- Stat 6 -->
                         <div class="stat-card">
                             <div class="stat-card-icon icon-amber">
                                 <i class="fa-regular fa-file"></i>
@@ -267,36 +518,25 @@
                         </div>
                     </div>
 
-                    <!-- CARD 1: 1. RECOMMENDED INDIAN STANDARDS (Full Width Table) -->
+                    <!-- ==========================================================================
+                         CARD 1: 1. RECOMMENDED INDIAN STANDARDS & STANDARD LIFE CYCLE
+                         ========================================================================== -->
                     <div class="card dashboard-card">
                         <div class="card-header-bar">
                             <div class="card-header-title">
-                                <i class="fa-regular fa-file-lines section-icon"></i>
-                                <span>1. RECOMMENDED INDIAN STANDARDS</span>
+                                <i class="fa-solid fa-diagram-project section-icon"></i>
+                                <span>1. Recommended Indian Standards & Standard Life Cycle</span>
                             </div>
-                            <button class="card-header-link" id="btn-view-all-standards">View All (<span id="total-standards-badge">12</span>)</button>
+                            <button class="card-header-link" id="btn-view-all-standards">
+                                View All (<span id="total-standards-badge">5</span>)
+                            </button>
                         </div>
-                        <div class="table-responsive">
-                            <table class="standiq-table" id="table-recommended-standards">
-                                <thead>
-                                    <tr>
-                                        <th style="width: 70px;">Rank</th>
-                                        <th style="width: 150px;">IS Number</th>
-                                        <th>Title</th>
-                                        <th style="width: 180px;">Applicability Score</th>
-                                        <th style="width: 100px;">Status</th>
-                                        <th style="width: 100px;">Type</th>
-                                        <th style="width: 140px; text-align: right;">Evidence</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tbody-recommended-standards">
-                                    <!-- Injected dynamically by app.js -->
-                                </tbody>
-                            </table>
+                        <div class="standards-cards-list notranslate" id="tbody-recommended-standards">
+                            <!-- Dynamically filled with Standard Life Cycle Cards by app.js -->
                         </div>
                         <div class="card-footer-link">
                             <button class="text-link-button" id="btn-view-all-standards-footer">
-                                View all <span id="footer-stds-count">12</span> recommended standards <i class="fa-solid fa-arrow-right"></i>
+                                View all <span id="footer-stds-count">12</span> recommended standards with official BIS Life Cycle <i class="fa-solid fa-arrow-right"></i>
                             </button>
                         </div>
                     </div>
@@ -308,7 +548,7 @@
                             <div class="card-header-bar">
                                 <div class="card-header-title">
                                     <i class="fa-regular fa-file-lines section-icon"></i>
-                                    <span>2. WHY THESE STANDARDS ARE RECOMMENDED</span>
+                                    <span>2. Why These Standards Are Recommended</span>
                                 </div>
                             </div>
                             <div class="card-content-body">
@@ -341,7 +581,7 @@
                                         <i class="fa-regular fa-lightbulb ai-icon"></i>
                                         <span class="ai-box-title">AI Explanation</span>
                                     </div>
-                                    <p class="ai-box-text" id="ai-explanation-text">
+                                    <p class="ai-box-text notranslate" id="ai-explanation-text">
                                         These standards are recommended because the requirement matches the product type, material, application, and key technical attributes defined in the standards.
                                     </p>
                                     <button class="btn-box-outline" id="btn-view-explanation-modal">
@@ -356,12 +596,12 @@
                             <div class="card-header-bar">
                                 <div class="card-header-title">
                                     <i class="fa-regular fa-file-lines section-icon"></i>
-                                    <span>3. RELATED / NORMATIVE STANDARDS</span>
+                                    <span>3. Related / Normative Standards</span>
                                 </div>
                             </div>
                             <div class="card-content-body">
                                 <div class="table-responsive">
-                                    <table class="standiq-table standiq-sub-table" id="table-related-standards">
+                                    <table class="standiq-table standiq-sub-table notranslate" id="table-related-standards">
                                         <thead>
                                             <tr>
                                                 <th style="width: 140px;">IS Number</th>
@@ -391,7 +631,7 @@
                             <div class="card-header-bar">
                                 <div class="card-header-title">
                                     <i class="fa-solid fa-pen-ruler section-icon"></i>
-                                    <span>4. VERSION & AMENDMENT STATUS</span>
+                                    <span>4. Version & Amendment Status</span>
                                 </div>
                             </div>
                             <div class="card-content-body">
@@ -433,11 +673,21 @@
                         <div class="card dashboard-card">
                             <div class="card-header-bar">
                                 <div class="card-header-title">
-                                    <i class="fa-regular fa-clock section-icon"></i>
-                                    <span>5. CERTIFICATION & COMPLIANCE</span>
+                                    <i class="fa-solid fa-stamp section-icon"></i>
+                                    <span>5. Certification & Compliance</span>
                                 </div>
                             </div>
                             <div class="card-content-body">
+                                <!-- Dynamic Mandatory vs Voluntary Count Strip -->
+                                <div class="comp-summary-strip" style="display: flex; gap: 8px; margin-bottom: 12px;">
+                                    <span class="badge-pill-card badge-mandatory" id="comp-mand-badge" style="flex: 1; text-align: center; justify-content: center; padding: 6px 8px; font-size: 11.5px; font-weight: 700;">
+                                        <i class="fa-solid fa-stamp"></i> Mandatory: <strong id="comp-mand-count" style="margin-left: 3px;">0</strong>
+                                    </span>
+                                    <span class="badge-pill-card badge-voluntary" id="comp-vol-badge" style="flex: 1; text-align: center; justify-content: center; padding: 6px 8px; font-size: 11.5px; font-weight: 700;">
+                                        <i class="fa-regular fa-circle-check"></i> Voluntary: <strong id="comp-vol-count" style="margin-left: 3px;">0</strong>
+                                    </span>
+                                </div>
+
                                 <div class="kv-list">
                                     <div class="kv-row">
                                         <span class="kv-key"><strong>BIS Product</strong> Certification</span>
@@ -457,13 +707,13 @@
                                     </div>
                                 </div>
 
-                                <div class="alert-box-info">
+                                <div class="alert-box-info" id="comp-status-alert">
                                     <i class="fa-solid fa-circle-info info-icon"></i>
-                                    <span class="alert-text">Compliance status is based on authorized BIS data and government notifications.</span>
+                                    <span class="alert-text" id="comp-status-alert-text">Compliance status is dynamically evaluated against authorized BIS Quality Control Orders & Statutory Gazette Acts.</span>
                                 </div>
 
                                 <button class="btn-box-outline btn-full-width" id="btn-view-compliance-details">
-                                    View Details
+                                    <i class="fa-solid fa-scale-balanced"></i> View Certification Directives
                                 </button>
                             </div>
                         </div>
@@ -473,7 +723,7 @@
                             <div class="card-header-bar">
                                 <div class="card-header-title">
                                     <i class="fa-regular fa-file-lines section-icon"></i>
-                                    <span>6. REQUIREMENT → STANDARD MAPPING</span>
+                                    <span>6. Requirement → Standard Mapping</span>
                                 </div>
                             </div>
                             <div class="card-content-body">
@@ -543,11 +793,11 @@
                             <div class="card-header-bar">
                                 <div class="card-header-title">
                                     <i class="fa-solid fa-triangle-exclamation section-icon text-warning"></i>
-                                    <span>7. MISSING / AMBIGUOUS INFORMATION</span>
+                                    <span>7. Missing / Ambiguous Information</span>
                                 </div>
                             </div>
                             <div class="card-content-body">
-                                <p class="card-intro-note">The following information could improve applicability:</p>
+                                <p class="card-intro-note">The following information could improve standards matching precision:</p>
                                 <ul class="bullet-list-missing" id="list-missing-info">
                                     <li>Specified load capacity not mentioned</li>
                                     <li>Tray width, height, and thickness not specified</li>
@@ -566,7 +816,7 @@
                             <div class="card-header-bar">
                                 <div class="card-header-title">
                                     <i class="fa-regular fa-file-lines section-icon"></i>
-                                    <span>8. TENDER-READY OUTPUT</span>
+                                    <span>8. Tender-Ready Output</span>
                                 </div>
                             </div>
                             <div class="card-content-body">
@@ -594,7 +844,7 @@
                                     </div>
                                 </div>
 
-                                <button class="btn-action-primary btn-full-width" id="btn-card-tender-spec">
+                                <button class="btn-action-navy btn-full-width" id="btn-card-tender-spec">
                                     <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Tender Specification
                                 </button>
                                 <button class="btn-box-outline btn-full-width" style="margin-top: 8px;" id="btn-card-download-pdf">
@@ -608,7 +858,7 @@
                             <div class="card-header-bar">
                                 <div class="card-header-title">
                                     <i class="fa-regular fa-file-lines section-icon"></i>
-                                    <span>9. SOURCE & TRACEABILITY</span>
+                                    <span>9. Source & Traceability</span>
                                 </div>
                             </div>
                             <div class="card-content-body">
@@ -653,7 +903,9 @@
                     </div>
                 </section>
 
-                <!-- VIEW 2: SEARCH STANDARDS VIEW -->
+                <!-- ==========================================================================
+                     VIEW 2: SEARCH STANDARDS VIEW
+                     ========================================================================== -->
                 <section id="view-search" class="app-view">
                     <div class="view-header">
                         <h2><i class="fa-solid fa-magnifying-glass"></i> Search & Discover Applicable Indian Standards</h2>
@@ -686,7 +938,7 @@
                                 </select>
                             </div>
                             <div class="form-col-action">
-                                <button class="btn-action-primary btn-large" id="btn-run-recommendation">
+                                <button class="btn-action-navy btn-large" id="btn-run-recommendation">
                                     <i class="fa-solid fa-wand-magic-sparkles"></i> Discover Applicable Standards
                                 </button>
                             </div>
@@ -707,6 +959,9 @@
                                 <button class="preset-chip" data-query="Supply of fortified sweet biscuits for government mid-day meal nutrition program." data-domain="Food and Agriculture">
                                     Mid-Day Meal Biscuits (IS 1011)
                                 </button>
+                                <button class="preset-chip" data-query="Specification for Protein-Fortified Bread for government hospital and institutional nutrition feeding programs." data-domain="Food and Agriculture">
+                                    Protein-Fortified Bread (IS 8665)
+                                </button>
                                 <button class="preset-chip" data-query="Procure 10,000 bags of 53 grade Ordinary Portland Cement for national highway bridge construction." data-domain="Civil Engineering">
                                     53 Grade OPC Cement (IS 269)
                                 </button>
@@ -721,7 +976,9 @@
                     </div>
                 </section>
 
-                <!-- VIEW 3: UPLOAD DOCUMENT VIEW -->
+                <!-- ==========================================================================
+                     VIEW 3: UPLOAD DOCUMENT VIEW
+                     ========================================================================== -->
                 <section id="view-upload" class="app-view">
                     <div class="view-header">
                         <h2><i class="fa-solid fa-file-arrow-up"></i> Upload Procurement Specification Document</h2>
@@ -736,7 +993,7 @@
                             <h3 class="dropzone-title">Drag and drop your Tender Document here</h3>
                             <p class="dropzone-sub">Supports PDF, DOCX, TXT files up to 25MB</p>
                             <div class="dropzone-actions">
-                                <label for="tender-file-input" class="btn-action-primary">
+                                <label for="tender-file-input" class="btn-action-navy">
                                     <i class="fa-solid fa-folder-open"></i> Browse Files
                                 </label>
                                 <input type="file" id="tender-file-input" accept=".pdf,.docx,.txt,.doc" style="display: none;">
@@ -755,7 +1012,7 @@
                             </div>
                             <div class="preview-text-scroll" id="preview-extracted-text"></div>
                             <div class="preview-footer">
-                                <button class="btn-action-primary btn-large" id="btn-process-uploaded-doc">
+                                <button class="btn-action-navy btn-large" id="btn-process-uploaded-doc">
                                     <i class="fa-solid fa-wand-magic-sparkles"></i> Extract Technical Spec & Recommend Standards
                                 </button>
                             </div>
@@ -763,7 +1020,9 @@
                     </div>
                 </section>
 
-                <!-- VIEW 4: HISTORY VIEW -->
+                <!-- ==========================================================================
+                     VIEW 4: HISTORY VIEW
+                     ========================================================================== -->
                 <section id="view-history" class="app-view">
                     <div class="view-header">
                         <div class="view-header-row">
@@ -799,7 +1058,9 @@
                     </div>
                 </section>
 
-                <!-- VIEW 5: SAVED RESULTS VIEW -->
+                <!-- ==========================================================================
+                     VIEW 5: SAVED RESULTS VIEW
+                     ========================================================================== -->
                 <section id="view-saved" class="app-view">
                     <div class="view-header">
                         <div class="view-header-row">
@@ -807,7 +1068,7 @@
                                 <h2><i class="fa-solid fa-bookmark"></i> Saved Procurement Results & Tenders</h2>
                                 <p>Bookmarked tender specifications and standard compliance portfolios.</p>
                             </div>
-                            <button class="btn-action-primary" id="btn-bookmark-current">
+                            <button class="btn-action-navy" id="btn-bookmark-current">
                                 <i class="fa-solid fa-bookmark"></i> Bookmark Current Result
                             </button>
                         </div>
@@ -820,7 +1081,9 @@
                     </div>
                 </section>
 
-                <!-- VIEW 6: ALERTS VIEW -->
+                <!-- ==========================================================================
+                     VIEW 6: ALERTS VIEW
+                     ========================================================================== -->
                 <section id="view-alerts" class="app-view">
                     <div class="view-header">
                         <h2><i class="fa-solid fa-bell"></i> BIS Regulatory & Quality Control Order (QCO) Alerts</h2>
@@ -869,7 +1132,9 @@
                     </div>
                 </section>
 
-                <!-- VIEW 7: SETTINGS VIEW -->
+                <!-- ==========================================================================
+                     VIEW 7: SETTINGS VIEW
+                     ========================================================================== -->
                 <section id="view-settings" class="app-view">
                     <div class="view-header">
                         <h2><i class="fa-solid fa-gear"></i> System Preferences & Configuration</h2>
@@ -948,14 +1213,16 @@
                         </div>
 
                         <div class="settings-footer">
-                            <button class="btn-action-primary" id="btn-save-settings">
+                            <button class="btn-action-navy" id="btn-save-settings">
                                 <i class="fa-solid fa-check"></i> Save Preferences
                             </button>
                         </div>
                     </div>
                 </section>
 
-                <!-- VIEW 8: HELP & GUIDE VIEW -->
+                <!-- ==========================================================================
+                     VIEW 8: HELP & GUIDE VIEW
+                     ========================================================================== -->
                 <section id="view-guide" class="app-view">
                     <div class="view-header">
                         <h2><i class="fa-regular fa-circle-question"></i> StandIQ Operational User Guide</h2>
@@ -983,6 +1250,9 @@
         </div>
     </div>
 
+    <!-- ==========================================================================
+         MODALS & DIALOGS
+         ========================================================================== -->
     <!-- MODAL 1: VIEW EVIDENCE MODAL -->
     <div id="modal-evidence" class="modal-backdrop hidden">
         <div class="modal-dialog modal-large">
@@ -1003,20 +1273,20 @@
                 <a href="#" target="_blank" class="btn-action-outline" id="evidence-external-link">
                     <i class="fa-solid fa-arrow-up-right-from-square"></i> Open BIS Portal
                 </a>
-                <button class="btn-action-primary" id="btn-close-evidence-modal">Close</button>
+                <button class="btn-action-navy" id="btn-close-evidence-modal">Close</button>
             </div>
         </div>
     </div>
 
     <!-- MODAL 2: AI EXPLANATION DETAILS MODAL -->
     <div id="modal-explanation" class="modal-backdrop hidden">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-large">
             <div class="modal-header">
                 <div class="modal-header-title">
-                    <i class="fa-regular fa-lightbulb modal-icon-amber"></i>
+                    <i class="fa-solid fa-wand-magic-sparkles modal-icon-amber"></i>
                     <div>
-                        <h3>AI Recommendation Explanation Breakdown</h3>
-                        <span class="modal-subtitle">Grounded Multi-Feature Relevance Scoring</span>
+                        <h3 id="explanation-modal-header-title">AI Grounded Recommendation Rationale</h3>
+                        <span class="modal-subtitle" id="explanation-modal-header-subtitle">Multi-Feature Standards Alignment Engine</span>
                     </div>
                 </div>
                 <button class="modal-close-btn" id="close-modal-explanation"><i class="fa-solid fa-xmark"></i></button>
@@ -1025,7 +1295,10 @@
                 <!-- Dynamically filled -->
             </div>
             <div class="modal-footer">
-                <button class="btn-action-primary" id="btn-close-explanation-modal">Done</button>
+                <button class="btn-action-outline" id="btn-copy-explanation-clause" style="display: none;">
+                    <i class="fa-regular fa-copy"></i> Copy Tender Clause
+                </button>
+                <button class="btn-action-navy" id="btn-close-explanation-modal">Done</button>
             </div>
         </div>
     </div>
@@ -1052,7 +1325,7 @@
                 <button class="btn-action-outline" id="btn-copy-tender-spec">
                     <i class="fa-regular fa-copy"></i> Copy to Clipboard
                 </button>
-                <button class="btn-action-primary" id="btn-download-tender-spec-file">
+                <button class="btn-action-navy" id="btn-download-tender-spec-file">
                     <i class="fa-solid fa-file-arrow-down"></i> Download Specification (.md)
                 </button>
             </div>
@@ -1095,6 +1368,29 @@
                         <span class="p-val">142</span>
                     </div>
                     <div class="profile-row">
+                        <span class="p-label" data-i18n="pref_lang">Preferred Language:</span>
+                        <div class="p-val">
+                            <select id="profile-lang-select" class="profile-lang-dropdown">
+                                <option value="en">English (Default)</option>
+                                <option value="hi">हिन्दी (Hindi)</option>
+                                <option value="ta">தமிழ் (Tamil)</option>
+                                <option value="te">తెలుగు (Telugu)</option>
+                                <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                                <option value="ml">മലയാളം (Malayalam)</option>
+                                <option value="bn">বাংলা (Bengali)</option>
+                                <option value="mr">मराठी (Marathi)</option>
+                                <option value="gu">ગુજરાતી (Gujarati)</option>
+                                <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+                                <option value="or">ଓଡ଼ିଆ (Odia)</option>
+                                <option value="as">অসমীয়া (Assamese)</option>
+                                <option value="ur">اردو (Urdu)</option>
+                                <option value="sa">संस्कृतम् (Sanskrit)</option>
+                                <option value="ne">नेपाली (Nepali)</option>
+                                <option value="mai">मैथिली (Maithili)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="profile-row">
                         <span class="p-label">Session Status:</span>
                         <span class="p-val" style="color: #16a34a;"><i class="fa-solid fa-circle" style="font-size: 8px;"></i> Active & Authenticated</span>
                     </div>
@@ -1104,7 +1400,7 @@
                 <button class="btn-action-outline" id="btn-profile-logout">
                     <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
                 </button>
-                <button class="btn-action-primary" id="btn-close-profile">Close</button>
+                <button class="btn-action-navy" id="btn-close-profile">Close</button>
             </div>
         </div>
     </div>
@@ -1127,7 +1423,7 @@
             </div>
             <div class="modal-footer">
                 <button class="btn-action-outline" id="btn-cancel-logout">Cancel</button>
-                <button class="btn-action-primary btn-danger-bg" id="btn-confirm-logout">Logout</button>
+                <button class="btn-action-navy btn-danger-bg" id="btn-confirm-logout">Logout</button>
             </div>
         </div>
     </div>
@@ -1149,13 +1445,155 @@
                 <!-- Dynamically filled -->
             </div>
             <div class="modal-footer">
-                <button class="btn-action-primary" id="btn-close-benchmark">Close</button>
+                <button class="btn-action-navy" id="btn-close-benchmark">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 7: COMPLIANCE & MANDATORY CERTIFICATION DETAILS MODAL -->
+    <div id="modal-compliance-details" class="modal-backdrop hidden">
+        <div class="modal-dialog modal-large">
+            <div class="modal-header">
+                <div class="modal-header-title">
+                    <i class="fa-solid fa-stamp modal-icon-amber"></i>
+                    <div>
+                        <h3>Mandatory Certification & Legal Compliance Directives</h3>
+                        <span class="modal-subtitle">Statutory Verification under Bureau of Indian Standards Act, 2016 & Quality Control Orders (QCO)</span>
+                    </div>
+                </div>
+                <button class="modal-close-btn" id="close-modal-compliance-details"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <!-- 4 Statutory Certification Scheme Cards -->
+                <div class="compliance-schemes-grid">
+                    <!-- Scheme 1: BIS Product Certification -->
+                    <div class="scheme-detail-card" id="card-scheme-bis">
+                        <div class="scheme-card-top">
+                            <div class="scheme-card-icon scheme-icon-isi">
+                                <i class="fa-solid fa-certificate"></i>
+                            </div>
+                            <div>
+                                <h4 class="scheme-card-title">BIS Product Certification</h4>
+                                <span class="scheme-sub-rule">Scheme-I / ISI Mark</span>
+                            </div>
+                            <span class="badge-pill-status pill-green scheme-status-pill" id="m-scheme-bis-status">Mandatory (QCO)</span>
+                        </div>
+                        <p class="scheme-card-desc" id="m-scheme-bis-desc">Mandatory ISI Mark license required under Central Government Gazette Quality Control Orders (QCO).</p>
+                    </div>
+
+                    <!-- Scheme 2: Quality Control Orders (QCO) -->
+                    <div class="scheme-detail-card" id="card-scheme-qco">
+                        <div class="scheme-card-top">
+                            <div class="scheme-card-icon scheme-icon-qco">
+                                <i class="fa-solid fa-gavel"></i>
+                            </div>
+                            <div>
+                                <h4 class="scheme-card-title">Quality Control Order (QCO)</h4>
+                                <span class="scheme-sub-rule">Gazette Notified Mandate</span>
+                            </div>
+                            <span class="badge-pill-status pill-green scheme-status-pill" id="m-scheme-qco-status">Enforced</span>
+                        </div>
+                        <p class="scheme-card-desc" id="m-scheme-qco-desc">Enforced under Quality Control Orders. Non-compliant products cannot be manufactured, imported or sold.</p>
+                    </div>
+
+                    <!-- Scheme 3: Compulsory Registration Scheme (CRS) -->
+                    <div class="scheme-detail-card" id="card-scheme-crs">
+                        <div class="scheme-card-top">
+                            <div class="scheme-card-icon scheme-icon-crs">
+                                <i class="fa-solid fa-laptop-code"></i>
+                            </div>
+                            <div>
+                                <h4 class="scheme-card-title">Compulsory Registration (CRS)</h4>
+                                <span class="scheme-sub-rule">Scheme-II / MeitY & MNRE</span>
+                            </div>
+                            <span class="badge-pill-status pill-gray scheme-status-pill" id="m-scheme-crs-status">Not Applicable</span>
+                        </div>
+                        <p class="scheme-card-desc" id="m-scheme-crs-desc">Self-declaration of conformity based on test reports from BIS recognized labs for notified electronic & solar goods.</p>
+                    </div>
+
+                    <!-- Scheme 4: Hallmarking Scheme -->
+                    <div class="scheme-detail-card" id="card-scheme-hallmark">
+                        <div class="scheme-card-top">
+                            <div class="scheme-card-icon scheme-icon-hallmark">
+                                <i class="fa-solid fa-gem"></i>
+                            </div>
+                            <div>
+                                <h4 class="scheme-card-title">BIS Hallmarking Scheme</h4>
+                                <span class="scheme-sub-rule">Precious Metals / 6-Digit HUID</span>
+                            </div>
+                            <span class="badge-pill-status pill-gray scheme-status-pill" id="m-scheme-hallmark-status">Not Applicable</span>
+                        </div>
+                        <p class="scheme-card-desc" id="m-scheme-hallmark-desc">Mandatory third-party purity certification and laser HUID marking for gold jewellery & artefacts under DoCA.</p>
+                    </div>
+                </div>
+
+                <!-- Per-Standard Mandatory vs Voluntary Table -->
+                <div class="standards-compliance-section" style="margin-top: 20px;">
+                    <div class="section-subheading" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <h4 style="margin: 0; font-size: 14px; font-weight: 700; color: #0f2b48;">
+                            <i class="fa-solid fa-list-check" style="color: #ea580c; margin-right: 6px;"></i>
+                            Identified Standards: Statutory Status & GeM Procurement Impact
+                        </h4>
+                        <span class="compliance-ratio-pill" id="m-compliance-ratio-badge" style="font-size: 11.5px; font-weight: 700; background: #FFF4E6; color: #C2410C; padding: 3px 10px; border-radius: 12px; border: 1px solid #FCD9B8;">
+                            0 Mandatory / 0 Voluntary
+                        </span>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="standiq-table standiq-sub-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 140px;">Standard</th>
+                                    <th>Title & Scope</th>
+                                    <th style="width: 130px; text-align: center;">Mandate</th>
+                                    <th style="width: 180px;">Certification Scheme</th>
+                                    <th>Governing Order / Legal Mandate</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-compliance-standards">
+                                <!-- Populated dynamically by app.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Legal & Statutory Notice Box -->
+                <div class="legal-statutory-box" style="margin-top: 18px; padding: 14px 16px; background: #FFFBF5; border: 1px solid #FCD9B8; border-left: 4px solid #ea580c; border-radius: 6px;">
+                    <div style="display: flex; gap: 10px; align-items: flex-start;">
+                        <i class="fa-solid fa-shield-halved" style="color: #ea580c; font-size: 18px; margin-top: 2px;"></i>
+                        <div>
+                            <strong style="font-size: 12.5px; color: #0f172a; display: block; margin-bottom: 4px;">Statutory Enforcement Notice (BIS Act 2016 Sections 16, 17 & 29)</strong>
+                            <p style="font-size: 12px; color: #475569; margin: 0; line-height: 1.5;" id="m-legal-directive-text">
+                                Under Section 16 & 17 of the Bureau of Indian Standards Act, 2016, where a mandatory Quality Control Order (QCO), CRS notification, or Hallmarking order has been notified by the Central Government, no person shall manufacture, import, distribute, sell, or offer for sale goods without a valid BIS Standard Mark. On Government e-Marketplace (GeM), non-certified bids are summarily disqualified at the technical evaluation stage.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-action-outline" id="btn-copy-compliance-summary">
+                    <i class="fa-regular fa-copy"></i> Copy Compliance Clause
+                </button>
+                <button class="btn-action-navy" id="btn-close-compliance-modal">Close</button>
             </div>
         </div>
     </div>
 
     <!-- TOAST NOTIFICATION CONTAINER -->
     <div id="toast-container" class="toast-container"></div>
+
+    <!-- Official National Portal Multilingual Translation Engine (Same as BIS / National Portals) -->
+    <div id="google_translate_element" style="display:none"></div>
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'en',
+                includedLanguages: 'en,hi,ta,te,kn,ml,bn,mr,gu,pa,or,as,ur,ne,sa,mai',
+                autoDisplay: false
+            }, 'google_translate_element');
+        }
+    </script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
     <!-- StandIQ Application Script -->
     <script src="/static/app.js"></script>

@@ -15,19 +15,53 @@ class ProcurementNLPExtractor:
         "meters", "kg", "tons", "packets", "certified", "standard", "quality", "government"
     }
 
+    SYNONYM_MAP = {
+        "home": "house",
+        "baby": "children",
+        "babies": "children",
+        "infants": "children",
+        "infant": "children",
+        "rich in protein": "protein fortified",
+        "protein rich": "protein fortified",
+        "protein-rich": "protein fortified",
+        "rods": "bars",
+        "rod": "bar",
+        "steel rods": "steel bars",
+        "tubes": "pipes",
+        "tube": "pipe",
+        "pv": "photovoltaic",
+        "solar panels": "solar photovoltaic panel",
+        "solar panel": "solar photovoltaic panel",
+        "electric wire": "electric cable wire",
+        "electrical wire": "electric cable wire",
+        "electrical wiring": "electric cable wiring",
+        "wiring": "wiring cable",
+        "extinguisher": "fire extinguisher",
+        "light luminaire": "street light luminaire"
+    }
+
     DOMAIN_MAPPINGS = {
-        "Food and Agriculture": ["biscuit", "biscuits", "wheat", "maida", "flour", "milk", "sugar", "food", "edible", "snack", "bakery", "atta", "tea", "coffee", "rice", "spice", "salt", "oil"],
-        "Electrotechnical": ["solar", "inverter", "pcu", "photovoltaic", "pv", "cable", "wire", "transformer", "switchgear", "led", "lamp", "battery", "ups", "generator", "motor", "meter"],
-        "Civil Engineering": ["cement", "portland", "concrete", "steel", "tmt", "rebar", "brick", "aggregate", "pipe", "hdpe", "pvc pipe", "structural steel", "tiles", "water meter"],
+        "Food and Agriculture": ["bread", "biscuit", "biscuits", "protein", "fortified", "wheat", "maida", "flour", "milk", "sugar", "food", "edible", "snack", "bakery", "atta", "tea", "coffee", "rice", "spice", "salt", "oil", "supplement"],
+        "Electrotechnical": ["solar", "inverter", "pcu", "photovoltaic", "pv", "cable", "wire", "transformer", "switchgear", "led", "lamp", "battery", "ups", "generator", "motor", "meter", "wiring", "luminaire", "house"],
+        "Civil Engineering": ["cement", "portland", "concrete", "steel", "tmt", "rebar", "bar", "bars", "rod", "rods", "brick", "aggregate", "pipe", "hdpe", "pvc pipe", "structural steel", "tiles", "water meter"],
         "Electronics and Information Technology": ["computer", "laptop", "server", "software", "biometric", "cctv", "monitor", "router", "telecom", "printer"],
         "Mechanical Engineering": ["fire extinguisher", "pump", "valve", "engine", "compressor", "crane", "cylinder", "bearing", "extinguisher", "oxygen cylinder"],
         "Personal Protective Equipment & Safety": ["mask", "n95", "helmet", "safety shoe", "safety shoes", "footwear", "gloves", "goggles", "ppe kit"]
     }
 
     @classmethod
+    def canonicalize_query(cls, text: str) -> str:
+        if not text:
+            return ""
+        res = text.lower()
+        for phrase, canonical in sorted(cls.SYNONYM_MAP.items(), key=lambda x: -len(x[0])):
+            res = re.sub(r'\b' + re.escape(phrase) + r'\b', canonical, res)
+        return res
+
+    @classmethod
     def extract_entities(cls, text: str) -> ExtractedEntities:
         cleaned = text.strip()
-        lower = cleaned.lower()
+        lower = cls.canonicalize_query(cleaned)
 
         # 1. Detect explicit IS numbers (e.g. IS 1011, IS 16221, IS:456, IS-269)
         detected_is = re.findall(r'IS\s*[:\-]?\s*(\d+(?:\s*(?:\(Part\s*\d+\)|Part\s*\d+))?)', cleaned, re.IGNORECASE)
