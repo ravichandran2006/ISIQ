@@ -3,6 +3,7 @@ import requests
 import os
 import hashlib
 import re
+import json
 from typing import List, Dict, Any, Optional
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from bs4 import BeautifulSoup
@@ -119,9 +120,10 @@ class BISCrawler:
 
             post_res = self.session.post(self.BASE_FREE_AMENDMENTS_URL, data=data, timeout=10)
             if post_res.status_code == 200:
-                return BISPreviewParser.parse_free_amendments_html(post_res.text, target_standard=standard_number)
+                amendments = BISPreviewParser.parse_free_amendments_html(post_res.text, target_standard=standard_number)
+                return amendments
         except Exception as e:
-            print(f"[FREE AMENDMENT FETCH ERROR] {standard_number}: {e}")
+            pass
         return []
 
     def search_keyword(self, keyword: str, max_preview_fetch: int = 6) -> List[Dict[str, Any]]:
@@ -215,7 +217,7 @@ class BISCrawler:
                     if res:
                         results.append(res)
                 except Exception as e:
-                    print(f"[PARSE ERROR] {e}")
+                    pass
 
         return results
 

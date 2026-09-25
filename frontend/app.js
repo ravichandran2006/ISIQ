@@ -274,9 +274,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
         window.scrollTo({ top: 0, behavior: "smooth" });
 
+        // Close mobile drawer on navigation
+        document.body.classList.remove("sidebar-mobile-open");
+
         // Trigger view-specific loads
+        if (viewName === "dashboard" && !currentData) renderDashboard(null);
         if (viewName === "history") renderHistoryTable();
         if (viewName === "saved") renderSavedResultsGrid();
+    }
+
+    // --- MOBILE HAMBURGER & DRAWER CONTROLLER ---
+    const btnMobileMenuToggle = document.getElementById("btn-mobile-menu-toggle");
+    const sidebarBackdrop = document.getElementById("sidebar-backdrop");
+
+    if (btnMobileMenuToggle) {
+        btnMobileMenuToggle.addEventListener("click", () => {
+            document.body.classList.toggle("sidebar-mobile-open");
+        });
+    }
+
+    if (sidebarBackdrop) {
+        sidebarBackdrop.addEventListener("click", () => {
+            document.body.classList.remove("sidebar-mobile-open");
+        });
     }
 
     // Bind nav buttons
@@ -289,7 +309,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     const navBrandHome = document.getElementById("nav-brand-home");
-    if (navBrandHome) navBrandHome.addEventListener("click", () => switchView("dashboard"));
+    if (navBrandHome) navBrandHome.addEventListener("click", () => switchView("search"));
 
     const btnHeaderNewSearch = document.getElementById("btn-header-new-search");
     if (btnHeaderNewSearch) btnHeaderNewSearch.addEventListener("click", () => switchView("search"));
@@ -298,7 +318,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (btnRefineReq) {
         btnRefineReq.addEventListener("click", () => {
             const input = document.getElementById("search-input-requirement");
-            input.value = currentData ? currentData.query : DEFAULT_DATA.query;
+            input.value = currentData ? currentData.query : "";
             switchView("search");
             input.focus();
         });
@@ -456,11 +476,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>
 
                 <div class="std-card-title">${std.title}</div>
-                ${std.governing_order && std.governing_order !== "None (Voluntary Standard)" ? `
-                <div class="std-mandate-order-tag" style="margin-top: 6px; font-size: 11.5px; color: #b91c1c; background: #fef2f2; padding: 4px 10px; border-radius: 4px; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; border: 1px solid #fecaca;">
-                    <i class="fa-solid fa-gavel"></i>
-                    <span><strong>Statutory Order:</strong> ${std.governing_order}</span>
-                </div>` : ''}
 
                 <div class="standard-lifecycle-box">
                     <div class="lifecycle-box-header">
@@ -478,6 +493,39 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- RENDER STANDIQ DASHBOARD RESULTS ---
     function renderDashboard(data) {
         currentData = data;
+
+        const recMasterCard = document.querySelector(".recommendation-master-card");
+        const statsGrid = document.querySelector(".stats-summary-grid");
+        const threeColGrid = document.querySelector(".grid-three-col");
+        const standardsList = document.getElementById("standards-cards-container");
+
+        if (!data) {
+            // Empty state when dashboard opened before running any search
+            if (recMasterCard) recMasterCard.style.display = "none";
+            if (statsGrid) statsGrid.style.display = "none";
+            if (threeColGrid) threeColGrid.style.display = "none";
+            if (standardsList) {
+                standardsList.innerHTML = `
+                    <div class="empty-dashboard-placeholder" style="text-align: center; padding: 48px 20px; background: #FFFFFF; border: 1.5px dashed var(--border-color); border-radius: 8px; margin: 16px 0;">
+                        <div style="width: 56px; height: 56px; border-radius: 50%; background: #FFF4E6; color: #EA580C; display: inline-flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 14px; border: 1px solid #FCD9B8;">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </div>
+                        <h3 style="font-size: 16px; font-weight: 700; color: #0F2B48; margin-bottom: 6px;">No Standards Searched Yet</h3>
+                        <p style="font-size: 13px; color: #64748B; max-width: 440px; margin: 0 auto 16px auto;">Enter your technical procurement requirement or tender description in Search Standards to discover applicable Indian Standards with gap analysis.</p>
+                        <button class="btn-action-navy" id="btn-empty-start-search" style="padding: 9px 20px; font-size: 13px; cursor: pointer;">
+                            <i class="fa-solid fa-magnifying-glass"></i> Search Indian Standards
+                        </button>
+                    </div>
+                `;
+                const emptyBtn = document.getElementById("btn-empty-start-search");
+                if (emptyBtn) emptyBtn.addEventListener("click", () => switchView("search"));
+            }
+            return;
+        }
+
+        if (recMasterCard) recMasterCard.style.display = "block";
+        if (statsGrid) statsGrid.style.display = "grid";
+        if (threeColGrid) threeColGrid.style.display = "grid";
 
         // Synchronize Top Search Input
         if (topSearchInput && data.query) {
@@ -509,27 +557,40 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // 2. BIS Standard Life Cycle & Quality Verification Widget
         const displayStatus = document.getElementById("display-lifecycle-status") || document.getElementById("display-score-large");
+        const hasRecs = data.primary_recommendations && data.primary_recommendations.length > 0;
+        
         if (displayStatus) {
-            displayStatus.textContent = data.latest_version_status === "Up to date" ? "Active & Reaffirmed" : "Active / Verified";
+            if (!hasRecs) {
+                displayStatus.textContent = "No Standards Matched";
+            } else {
+                displayStatus.textContent = data.latest_version_status === "Up to date" ? "Active & Reaffirmed" : "Active / Verified";
+            }
         }
         const displayTier = document.getElementById("display-score-tier");
         if (displayTier) {
             const comp = data.compliance || {};
-            const isMand = (comp.mandatory_count > 0) || (data.primary_recommendations && data.primary_recommendations.some(r => r.is_mandatory));
-            const tierText = comp.score_tier_text || (isMand ? "Mandatory Compliance Required" : "Voluntary Standard / Advisory");
-            const icon = isMand ? "fa-stamp" : "fa-circle-check";
-            displayTier.style.background = isMand ? "#FFF4E6" : "#F0FDF4";
-            displayTier.style.color = isMand ? "#C2410C" : "#16A34A";
-            displayTier.style.borderColor = isMand ? "#FCD9B8" : "#86EFAC";
-            displayTier.innerHTML = `<i class="fa-solid ${icon}"></i> ${tierText}`;
+            if (!hasRecs) {
+                displayTier.style.background = "#F1F5F9";
+                displayTier.style.color = "#475569";
+                displayTier.style.borderColor = "#CBD5E1";
+                displayTier.innerHTML = `<i class="fa-solid fa-circle-info"></i> No Relevant Standards Found`;
+            } else {
+                const isMand = (comp.mandatory_count > 0) || (data.primary_recommendations && data.primary_recommendations.some(r => r.is_mandatory));
+                const tierText = comp.score_tier_text || (isMand ? "Mandatory Compliance Required" : "Voluntary Standard / Advisory");
+                const icon = isMand ? "fa-stamp" : "fa-circle-check";
+                displayTier.style.background = isMand ? "#FFF4E6" : "#F0FDF4";
+                displayTier.style.color = isMand ? "#C2410C" : "#16A34A";
+                displayTier.style.borderColor = isMand ? "#FCD9B8" : "#86EFAC";
+                displayTier.innerHTML = `<i class="fa-solid ${icon}"></i> ${tierText}`;
+            }
         }
 
         // 3. 6 Key Metrics
-        document.getElementById("stat-standards-found").textContent = data.standards_found_count || (data.primary_recommendations ? data.primary_recommendations.length : 8);
-        document.getElementById("stat-related-standards").textContent = data.related_standards_count || (data.normative_references ? data.normative_references.length + data.allied_references.length : 6);
-        document.getElementById("stat-latest-version").textContent = data.latest_version_status || "Up to date";
-        document.getElementById("stat-compliance-checks").textContent = data.compliance_checks || "4 / 4";
-        document.getElementById("stat-reqs-extracted").textContent = data.requirements_extracted_count || 15;
+        document.getElementById("stat-standards-found").textContent = hasRecs ? (data.standards_found_count || data.primary_recommendations.length) : 0;
+        document.getElementById("stat-related-standards").textContent = hasRecs ? (data.related_standards_count || (data.normative_references ? data.normative_references.length + data.allied_references.length : 0)) : 0;
+        document.getElementById("stat-latest-version").textContent = hasRecs ? (data.latest_version_status || "Up to date") : "N/A";
+        document.getElementById("stat-compliance-checks").textContent = hasRecs ? (data.compliance_checks || "4 / 4") : "0 / 0";
+        document.getElementById("stat-reqs-extracted").textContent = data.requirements_extracted_count || 1;
         document.getElementById("stat-doc-pages").textContent = data.doc_pages || 0;
         document.getElementById("stat-doc-type").textContent = data.doc_pages > 0 ? "(PDF Document)" : "(Text Input)";
 
@@ -545,11 +606,31 @@ document.addEventListener("DOMContentLoaded", () => {
         const footerCount = document.getElementById("footer-stds-count");
         if (footerCount) footerCount.textContent = recs.length;
 
-        recs.forEach((std, idx) => {
-            const cardWrapper = document.createElement("div");
-            cardWrapper.innerHTML = buildStandardLifecycleCardHtml(std, idx).trim();
-            container.appendChild(cardWrapper.firstElementChild);
-        });
+        if (recs.length === 0) {
+            container.innerHTML = `
+                <div class="empty-dashboard-placeholder" style="text-align: center; padding: 40px 20px; background: #FFFFFF; border: 1.5px dashed var(--border-color); border-radius: 8px; margin: 12px 0;">
+                    <div style="width: 50px; height: 50px; border-radius: 50%; background: #FEF2F2; color: #DC2626; display: inline-flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 12px; border: 1px solid #FECACA;">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                    </div>
+                    <h3 style="font-size: 16px; font-weight: 700; color: #0F2B48; margin-bottom: 6px;">No Relevant Indian Standards Found</h3>
+                    <p style="font-size: 13px; color: #64748B; max-width: 520px; margin: 0 auto 16px auto;">
+                        StandIQ evaluated your requirement and found no matching Indian Standards in the indexed BIS catalog. 
+                        Please ensure the input describes a physical product, machinery, appliance, or technical specification.
+                    </p>
+                    <button class="btn-action-navy" id="btn-empty-retry-search" style="padding: 9px 20px; font-size: 13px; cursor: pointer;">
+                        <i class="fa-solid fa-magnifying-glass"></i> Modify Procurement Requirement
+                    </button>
+                </div>
+            `;
+            const retryBtn = document.getElementById("btn-empty-retry-search");
+            if (retryBtn) retryBtn.addEventListener("click", () => switchView("search"));
+        } else {
+            recs.forEach((std, idx) => {
+                const cardWrapper = document.createElement("div");
+                cardWrapper.innerHTML = buildStandardLifecycleCardHtml(std, idx).trim();
+                container.appendChild(cardWrapper.firstElementChild);
+            });
+        }
 
         // Add Evidence & AI Explain Click Handlers
         container.querySelectorAll(".btn-ai-explain-table").forEach(btn => {
@@ -627,9 +708,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // 5.5 Card 5: Dynamic Certification & Compliance
         const comp = data.compliance || {};
-        const recsList = data.primary_recommendations || [];
-        const mandCount = comp.mandatory_count !== undefined ? comp.mandatory_count : recsList.filter(r => r.is_mandatory).length;
-        const volCount = comp.voluntary_count !== undefined ? comp.voluntary_count : recsList.filter(r => !r.is_mandatory).length;
+        const mandCount = hasRecs ? (comp.mandatory_count !== undefined ? comp.mandatory_count : recs.filter(r => r.is_mandatory).length) : 0;
+        const volCount = hasRecs ? (comp.voluntary_count !== undefined ? comp.voluntary_count : recs.filter(r => !r.is_mandatory).length) : 0;
 
         const elMandCount = document.getElementById("comp-mand-count");
         if (elMandCount) elMandCount.textContent = mandCount;
@@ -645,48 +725,152 @@ document.addEventListener("DOMContentLoaded", () => {
             el.className = `badge-pill-status ${cls}`;
         };
 
-        updateCompliancePill("comp-bis", comp.bis_product, "Mandatory (QCO)", "pill-green");
-        updateCompliancePill("comp-qco", comp.qco, "Mandatory QCO Enforced", "pill-green");
-        updateCompliancePill("comp-crs", comp.crs, "Not Applicable", "pill-gray");
-        updateCompliancePill("comp-hallmark", comp.hallmarking, "Not Applicable", "pill-gray");
+        if (!hasRecs) {
+            updateCompliancePill("comp-bis", null, "Not Applicable", "pill-gray");
+            updateCompliancePill("comp-qco", null, "Not Applicable", "pill-gray");
+            updateCompliancePill("comp-crs", null, "Not Applicable", "pill-gray");
+            updateCompliancePill("comp-hallmark", null, "Not Applicable", "pill-gray");
+        } else {
+            updateCompliancePill("comp-bis", comp.bis_product, mandCount > 0 ? "Mandatory (QCO)" : "Applicable (Voluntary)", mandCount > 0 ? "pill-green" : "pill-gray");
+            updateCompliancePill("comp-qco", comp.qco, mandCount > 0 ? "Mandatory QCO Enforced" : "Not Applicable", mandCount > 0 ? "pill-green" : "pill-gray");
+            updateCompliancePill("comp-crs", comp.crs, "Not Applicable", "pill-gray");
+            updateCompliancePill("comp-hallmark", comp.hallmarking, "Not Applicable", "pill-gray");
+        }
 
         const compAlert = document.getElementById("comp-status-alert-text");
         if (compAlert) {
-            const qcoObj = comp.qco || {};
-            const crsObj = comp.crs || {};
-            const hallObj = comp.hallmarking || {};
-            const qcoStatus = typeof qcoObj === "object" ? qcoObj.status : qcoObj;
-            const crsStatus = typeof crsObj === "object" ? crsObj.status : crsObj;
-            const hallStatus = typeof hallObj === "object" ? hallObj.status : hallObj;
-
-            if (qcoStatus && qcoStatus.includes("Enforced")) {
-                compAlert.textContent = qcoObj.description || "Enforced under statutory Quality Control Order (QCO). Uncertified goods are rejected on GeM.";
-            } else if (crsStatus && crsStatus.includes("Mandatory")) {
-                compAlert.textContent = crsObj.description || "Mandatory Compulsory Registration Scheme (CRS) for electronics / solar equipment.";
-            } else if (hallStatus && hallStatus.includes("Mandatory")) {
-                compAlert.textContent = hallObj.description || "Mandatory Gold Hallmarking with 6-digit HUID laser marking under Central Order.";
+            if (!hasRecs) {
+                compAlert.textContent = "No applicable Indian Standards found for this requirement. Certification status is Not Applicable.";
             } else {
-                compAlert.textContent = "Voluntary / Advisory Indian Standards identified. Compliance recommended for technical quality assurance.";
+                const qcoObj = comp.qco || {};
+                const crsObj = comp.crs || {};
+                const hallObj = comp.hallmarking || {};
+                const qcoStatus = typeof qcoObj === "object" ? qcoObj.status : qcoObj;
+                const crsStatus = typeof crsObj === "object" ? crsObj.status : crsObj;
+                const hallStatus = typeof hallObj === "object" ? hallObj.status : hallObj;
+
+                if (qcoStatus && qcoStatus.includes("Enforced")) {
+                    compAlert.textContent = qcoObj.description || "Enforced under statutory Quality Control Order (QCO). Uncertified goods are rejected on GeM.";
+                } else if (crsStatus && crsStatus.includes("Mandatory")) {
+                    compAlert.textContent = crsObj.description || "Mandatory Compulsory Registration Scheme (CRS) for electronics / solar equipment.";
+                } else if (hallStatus && hallStatus.includes("Mandatory")) {
+                    compAlert.textContent = hallObj.description || "Mandatory Gold Hallmarking with 6-digit HUID laser marking under Central Order.";
+                } else {
+                    compAlert.textContent = "Voluntary / Advisory Indian Standards identified. Compliance recommended for technical quality assurance.";
+                }
             }
         }
 
         // 6. Version & Amendment Card
         const v = data.version_status || {};
-        document.getElementById("kv-current-std").textContent = v.current_standard || "Yes";
-        document.getElementById("kv-superseded").textContent = v.superseded || "No";
-        document.getElementById("kv-total-amendments").textContent = v.total_amendments ?? 2;
-        document.getElementById("kv-latest-amd").textContent = v.latest_amendment || "Amendment No. 1 (2022)";
-        document.getElementById("kv-date-latest-amd").textContent = v.date_latest_amendment || "15 Aug 2022";
+        const topRec = hasRecs ? recs[0] : null;
 
-        // 7. Missing Info Card
-        const listMissing = document.getElementById("list-missing-info");
-        listMissing.innerHTML = "";
-        const missing = data.missing_information || DEFAULT_DATA.missing_information;
-        missing.forEach(m => {
-            const li = document.createElement("li");
-            li.textContent = m;
-            listMissing.appendChild(li);
-        });
+        const currentStdText = hasRecs ? (topRec.status || "Active") : "N/A";
+        const currentStdClass = hasRecs ? "pill-green" : "pill-gray";
+        const supersededText = hasRecs ? (topRec.superseded_by_is ? "Yes" : "No") : "N/A";
+
+        let totalAmds = 0;
+        let latestAmd = "None";
+        let latestAmdDate = "N/A";
+
+        if (hasRecs && topRec) {
+            totalAmds = topRec.no_of_amendments || (topRec.amendments ? topRec.amendments.length : 0);
+            if (topRec.amendments && topRec.amendments.length > 0) {
+                const a0 = topRec.amendments[0];
+                latestAmd = a0.amendment_number || "Amendment No. 1";
+                latestAmdDate = a0.amendment_year ? `${a0.amendment_year}` : (a0.publication_date || "Active");
+            } else if (totalAmds > 0) {
+                latestAmd = `Amendment No. ${totalAmds}`;
+                latestAmdDate = "Active";
+            } else {
+                latestAmd = "None (Original active)";
+                latestAmdDate = topRec.publication_year ? `${topRec.publication_year}` : "N/A";
+            }
+        }
+
+        const elCurrent = document.getElementById("kv-current-std");
+        if (elCurrent) {
+            elCurrent.textContent = currentStdText;
+            elCurrent.className = `badge-pill-status ${currentStdClass}`;
+        }
+        const elSuper = document.getElementById("kv-superseded");
+        if (elSuper) elSuper.textContent = supersededText;
+        const elTotalAmd = document.getElementById("kv-total-amendments");
+        if (elTotalAmd) elTotalAmd.textContent = totalAmds;
+        const elLatestAmd = document.getElementById("kv-latest-amd");
+        if (elLatestAmd) elLatestAmd.textContent = latestAmd;
+        const elDateLatest = document.getElementById("kv-date-latest-amd");
+        if (elDateLatest) elDateLatest.textContent = latestAmdDate;
+
+        const boxVersionAlert = document.getElementById("box-version-alert");
+        if (boxVersionAlert) {
+            if (!hasRecs) {
+                boxVersionAlert.style.display = "none";
+            } else if (topRec && topRec.superseded_by_is) {
+                boxVersionAlert.style.display = "flex";
+                boxVersionAlert.className = "alert-box-warning";
+                boxVersionAlert.innerHTML = `<i class="fa-solid fa-triangle-exclamation alert-icon"></i><span class="alert-text">Standard superseded by ${topRec.superseded_by_is}. Procuring ${topRec.standard_number} may lead to tender rejection.</span>`;
+            } else {
+                boxVersionAlert.style.display = "flex";
+                boxVersionAlert.className = "alert-box-success";
+                boxVersionAlert.innerHTML = `<i class="fa-solid fa-circle-check alert-icon" style="color: #16A34A;"></i><span class="alert-text" style="color: #166534;">Verified active standard in official Bureau of Indian Standards catalog.</span>`;
+            }
+        }
+
+        // 7. Missing Info Card - Structured Table Rendering
+        const tbodyMissing = document.getElementById("tbody-missing-info");
+        const summaryElem = document.getElementById("missing-info-summary");
+        const badgeMissingCount = document.getElementById("badge-missing-count");
+
+        if (tbodyMissing) {
+            tbodyMissing.innerHTML = "";
+            const gapAnalysis = data.gap_analysis;
+            const gapMatrix = (gapAnalysis && gapAnalysis.gap_matrix) ? gapAnalysis.gap_matrix : [];
+
+            if (gapMatrix.length > 0) {
+                let missingCount = 0;
+                gapMatrix.forEach(item => {
+                    const tr = document.createElement("tr");
+                    const isProvided = item.status === "PROVIDED";
+                    if (!isProvided) missingCount++;
+
+                    const statusBadgeClass = isProvided ? "pill-green" : "pill-orange";
+                    const statusText = isProvided ? (item.user_provided ? `Provided: ${item.user_provided}` : "Specified") : "Missing / Ambiguous";
+
+                    let riskClass = "pill-gray";
+                    const risk = item.risk_level || "Moderate";
+                    if (risk === "High") riskClass = "pill-red";
+                    else if (risk === "Moderate") riskClass = "pill-orange";
+                    else if (risk === "Conformant") riskClass = "pill-green";
+
+                    tr.innerHTML = `
+                        <td><strong>${item.parameter}</strong></td>
+                        <td><span class="badge-pill-status ${statusBadgeClass}" style="font-size: 11px;">${statusText}</span></td>
+                        <td><span style="font-size: 12px; color: var(--text-secondary); line-height: 1.4; display: block;">${item.recommendation}</span></td>
+                        <td style="text-align: center;"><span class="badge-pill-status ${riskClass}" style="font-size: 10.5px;">${risk}</span></td>
+                    `;
+                    tbodyMissing.appendChild(tr);
+                });
+
+                if (badgeMissingCount) badgeMissingCount.textContent = `${missingCount} Missing Parameters`;
+                if (summaryElem && gapAnalysis.completeness_summary) {
+                    summaryElem.textContent = gapAnalysis.completeness_summary;
+                }
+            } else {
+                const missingList = data.missing_information || [];
+                missingList.forEach((m, idx) => {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td><strong>Technical Requirement Note #${idx + 1}</strong></td>
+                        <td><span class="badge-pill-status pill-orange" style="font-size: 11px;">Guidance</span></td>
+                        <td><span style="font-size: 12px; color: var(--text-secondary); line-height: 1.4; display: block;">${m}</span></td>
+                        <td style="text-align: center;"><span class="badge-pill-status pill-orange" style="font-size: 10.5px;">Moderate</span></td>
+                    `;
+                    tbodyMissing.appendChild(tr);
+                });
+                if (badgeMissingCount) badgeMissingCount.textContent = `${missingList.length} Items`;
+            }
+        }
 
         // 8. Source & Traceability
         document.getElementById("kv-retrieved-on").textContent = data.searched_on || new Date().toLocaleString();
@@ -698,13 +882,13 @@ document.addEventListener("DOMContentLoaded", () => {
             if (firstRec && firstRec.why_relevant) {
                 aiExpElem.textContent = `${firstRec.standard_number} (${firstRec.title}) is recommended: ${firstRec.why_relevant}`;
             } else {
-                aiExpElem.textContent = "These standards are recommended because the requirement matches the product type, material, application, and key technical attributes defined in the standards.";
+                aiExpElem.textContent = hasRecs ? "These standards are recommended because the requirement matches the product type, material, application, and key technical attributes defined in the standards." : "No matching Indian Standards identified for this query.";
             }
         }
     }
 
-    // Initialize Dashboard with Default State on load
-    renderDashboard(DEFAULT_DATA);
+    // Initialize App: Default landing view is clean Search (no pre-filled mock data)
+    switchView("search");
 
     // --- SEARCH / RECOMMENDATION ENGINE TRIGGER ---
     const searchInput = document.getElementById("search-input-requirement");
@@ -757,6 +941,59 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const apiData = await resp.json();
 
+            // Check if Semantic Relevance Gate or Intent Gate rejected the query
+            if (apiData.status === "no_relevant_results" || !apiData.primary_recommendations || apiData.primary_recommendations.length === 0) {
+                const rejectMsg = apiData.message || "No relevant Indian Standards found for the given requirement.";
+                showToast(rejectMsg, "warning");
+                const emptyData = {
+                    query: queryText,
+                    domain: "General Context (No Standards Matched)",
+                    source: sourceName,
+                    searched_on: new Date().toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }),
+                    best_score: 0,
+                    relevance_tier: "No Relevant Standards Found",
+                    standards_found_count: 0,
+                    related_standards_count: 0,
+                    latest_version_status: "No Applicable Standards",
+                    compliance_checks: "0 / 0",
+                    requirements_extracted_count: 0,
+                    doc_pages: docPages,
+                    primary_recommendations: [],
+                    normative_references: [],
+                    allied_references: [],
+                    compliance: {
+                        relevance_tier: "No Relevant Standards Found",
+                        score_tier_text: "No Relevant Standards Found",
+                        mandatory_count: 0,
+                        voluntary_count: 0,
+                        bis_product: { status: "Not Applicable", badge_class: "pill-gray" },
+                        qco: { status: "Not Applicable", badge_class: "pill-gray" },
+                        crs: { status: "Not Applicable", badge_class: "pill-gray" },
+                        hallmarking: { status: "Not Applicable", badge_class: "pill-gray" }
+                    },
+                    version_status: {
+                        current_standard: "N/A",
+                        superseded: "N/A",
+                        total_amendments: 0,
+                        latest_amendment: "None (No standard selected)",
+                        date_latest_amendment: "N/A",
+                        alert: "No applicable Indian Standards found for this requirement."
+                    },
+                    missing_information: [
+                        rejectMsg,
+                        "StandIQ evaluated the input and determined no matching Indian Standards currently govern this requirement.",
+                        "Please provide an authentic technical product specification or engineering procurement requirement."
+                    ],
+                    gap_analysis: apiData.gap_analysis || null,
+                    detected_language: apiData.detected_language || "en",
+                    translated_query: apiData.translated_query || null,
+                    rawApiData: apiData
+                };
+                renderDashboard(emptyData);
+                switchView("dashboard");
+                return;
+            }
+
             // Transform API response into StandIQ Dashboard format
             const formattedData = transformApiResponse(apiData, queryText, sourceName, docPages);
 
@@ -783,33 +1020,48 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function transformApiResponse(api, query, source, docPages) {
-        const primaryRecs = (api.primary_recommendations || []).map((s, i) => ({
-            rank: i + 1,
-            standard_number: s.standard_number,
-            publication_year: s.publication_year,
-            reaffirmed_year: s.reaffirmed_year,
-            no_of_amendments: s.no_of_amendments !== undefined ? s.no_of_amendments : (s.amendments ? s.amendments.length : 1),
-            revision_count: s.revision_count || 0,
-            revision_text: s.revision_text || "Original Publication",
-            certification_scheme: s.certification_scheme || (s.is_mandatory ? "Mandatory ISI Scheme-I" : "Voluntary Standard"),
-            is_mandatory: s.is_mandatory !== undefined ? s.is_mandatory : true,
-            mandate_type: s.mandate_type || (s.is_mandatory ? "QCO" : "VOLUNTARY"),
-            governing_order: s.governing_order || null,
-            mandate_reason: s.mandate_reason || null,
-            lifecycle_timeline: s.lifecycle_timeline || [],
-            title: s.title,
-            status: s.status || "Active",
-            type: i === 0 || i === 2 ? "Primary" : "Related",
-            scope: s.scope_snippet || s.scope || "Prescribes technical specifications, quality criteria, and testing tolerances.",
-            committee_code: s.committee_code || "MTD / ETD",
-            ics_code: s.ics_code || "29.120",
-            preview_url: s.preview_url || `https://standardsbis.bsbedge.com/BIS_searchstandard.aspx?keyword=${encodeURIComponent(s.standard_number)}`,
-            why_relevant: s.why_relevant || "Matches technical requirements and safety parameters of the procurement specification.",
-            amendments_count: s.no_of_amendments !== undefined ? s.no_of_amendments : (s.amendments ? s.amendments.length : 1),
-            latest_amendment: (s.amendments && s.amendments[0]) ? s.amendments[0].amendment_number : "Amendment No. 1",
-            amendment_date: (s.amendments && s.amendments[0] && s.amendments[0].amendment_year) ? `${s.amendments[0].amendment_year}` : "2017",
-            amendments: s.amendments || []
-        }));
+        const primaryRecs = (api.primary_recommendations || []).map((s, i) => {
+            const amdCount = s.no_of_amendments !== undefined ? s.no_of_amendments : (s.amendments ? s.amendments.length : 0);
+            let latestAmdStr = "None (Original active)";
+            let amdDateStr = s.publication_year ? `${s.publication_year}` : "Active";
+
+            if (s.amendments && s.amendments.length > 0 && s.amendments[0]) {
+                const a0 = s.amendments[0];
+                latestAmdStr = a0.amendment_number || "Amendment No. 1";
+                amdDateStr = a0.amendment_year ? `${a0.amendment_year}` : (a0.publication_date || "Active");
+            } else if (amdCount > 0) {
+                latestAmdStr = `Amendment No. ${amdCount}`;
+                amdDateStr = "Active";
+            }
+
+            return {
+                rank: i + 1,
+                standard_number: s.standard_number,
+                publication_year: s.publication_year,
+                reaffirmed_year: s.reaffirmed_year,
+                no_of_amendments: amdCount,
+                revision_count: s.revision_count || 0,
+                revision_text: s.revision_text || "Original Publication",
+                certification_scheme: s.certification_scheme || (s.is_mandatory ? "Mandatory ISI Scheme-I" : "Voluntary Standard"),
+                is_mandatory: s.is_mandatory !== undefined ? s.is_mandatory : false,
+                mandate_type: s.mandate_type || (s.is_mandatory ? "QCO" : "VOLUNTARY"),
+                governing_order: s.governing_order || null,
+                mandate_reason: s.mandate_reason || null,
+                lifecycle_timeline: s.lifecycle_timeline || [],
+                title: s.title,
+                status: s.status || "Active",
+                type: i === 0 || i === 2 ? "Primary" : "Related",
+                scope: s.scope_snippet || s.scope || "Prescribes technical specifications, quality criteria, and testing tolerances.",
+                committee_code: s.committee_code || "MTD / ETD",
+                ics_code: s.ics_code || "29.120",
+                preview_url: s.preview_url || `https://standardsbis.bsbedge.com/BIS_searchstandard.aspx?keyword=${encodeURIComponent(s.standard_number)}`,
+                why_relevant: s.why_relevant || "Matches technical requirements and safety parameters of the procurement specification.",
+                amendments_count: amdCount,
+                latest_amendment: latestAmdStr,
+                amendment_date: amdDateStr,
+                amendments: s.amendments || []
+            };
+        });
 
         const normative = [];
         const allied = [];
@@ -823,20 +1075,6 @@ document.addEventListener("DOMContentLoaded", () => {
             else allied.push(item);
         });
 
-        // If API returned few references, supply domain-grounded references
-        if (normative.length === 0) {
-            normative.push(
-                { std: "IS 8082:2021", title: "Electroplated Coatings of Zinc on Iron & Steel" },
-                { std: "IS 2629:1985", title: "Recommended Practice for Hot Dip Galvanizing" }
-            );
-        }
-        if (allied.length === 0) {
-            allied.push(
-                { std: "IS 2102:1999", title: "Safety of Machinery - General Principles" },
-                { std: "IS 732:1993", title: "Code of Practice for Electrical Wiring Installations" }
-            );
-        }
-
         const compSummary = api.compliance_summary || {
             bis_product: { status: primaryRecs.some(r => r.is_mandatory) ? "Mandatory (QCO)" : "Applicable (Voluntary)", badge_class: "pill-green" },
             qco: { status: primaryRecs.some(r => r.is_mandatory) ? "Mandatory QCO Enforced" : "Not Applicable", badge_class: primaryRecs.some(r => r.is_mandatory) ? "pill-green" : "pill-gray" },
@@ -848,6 +1086,24 @@ document.addEventListener("DOMContentLoaded", () => {
             score_tier_text: primaryRecs.some(r => r.is_mandatory) ? "Mandatory Compliance Required" : "Voluntary Quality Standard"
         };
 
+        // Extract dynamic Specification Gap Detection from backend
+        let missingInfo = [];
+        if (api.gap_analysis) {
+            if (api.gap_analysis.completeness_summary) {
+                missingInfo.push(api.gap_analysis.completeness_summary);
+            }
+            if (api.gap_analysis.missing_specifications && api.gap_analysis.missing_specifications.length > 0) {
+                api.gap_analysis.missing_specifications.forEach(m => {
+                    missingInfo.push(`Missing / Recommended: Specify ${m}`);
+                });
+            }
+        }
+        if (missingInfo.length === 0) {
+            missingInfo = [
+                "Your requirement contains the key specifications identified from the available applicable standard information."
+            ];
+        }
+
         return {
             query: query,
             domain: (api.extracted_entities && api.extracted_entities.domain) || "General Technical Specification",
@@ -855,7 +1111,7 @@ document.addEventListener("DOMContentLoaded", () => {
             searched_on: new Date().toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }),
             best_score: 100,
             relevance_tier: compSummary.relevance_tier || (primaryRecs.some(r => r.is_mandatory) ? "Primary Mandatory Standard" : "Primary Recommended Standard (Voluntary)"),
-            standards_found_count: primaryRecs.length > 0 ? primaryRecs.length * 2 : 12,
+            standards_found_count: primaryRecs.length,
             related_standards_count: normative.length + allied.length,
             latest_version_status: "Up to date",
             compliance_checks: "4 / 4",
@@ -867,18 +1123,15 @@ document.addEventListener("DOMContentLoaded", () => {
             version_status: {
                 current_standard: "Yes",
                 superseded: "No",
-                total_amendments: primaryRecs.length > 0 ? primaryRecs[0].amendments_count : 2,
-                latest_amendment: primaryRecs.length > 0 ? primaryRecs[0].latest_amendment : "Amendment No. 1 (2022)",
-                date_latest_amendment: primaryRecs.length > 0 ? primaryRecs[0].amendment_date : "15 Aug 2022",
-                alert: "Tender may refer to an older version. Review recommended."
+                total_amendments: primaryRecs.length > 0 ? primaryRecs[0].amendments_count : 0,
+                latest_amendment: primaryRecs.length > 0 ? primaryRecs[0].latest_amendment : "No active amendment",
+                date_latest_amendment: primaryRecs.length > 0 ? primaryRecs[0].amendment_date : "N/A",
+                alert: "Verified against latest Bureau of Indian Standards catalog."
             },
             compliance: compSummary,
-            missing_information: [
-                "Specified load capacity / safe working load (SWL) not mentioned",
-                "Dimensions (width, depth, thickness) not specified",
-                "Operating ambient environment (corrosive, marine, indoor) not detailed",
-                "Finishing coating thickness (microns) not explicitly defined"
-            ],
+            missing_information: missingInfo,
+            gap_analysis: api.gap_analysis || null,
+            rawApiData: api,
             detected_language: api.detected_language || "en",
             translated_query: api.translated_query || null
         };
@@ -1520,9 +1773,26 @@ rejected as technically non-responsive without further evaluation.
 ================================================================================`;
     }
 
-    function openTenderSpecModal() {
-        tenderSpecContent.textContent = generateTenderSpecText();
+    async function openTenderSpecModal() {
         modalTenderSpec.classList.remove("hidden");
+        tenderSpecContent.textContent = "Compiling official 13-section Government Tender Specification Report from verified BIS data...";
+        if (currentData && currentData.rawApiData && currentData.rawApiData.status !== "no_relevant_results") {
+            try {
+                const resp = await fetch("/api/v1/generate-tender-report", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(currentData.rawApiData)
+                });
+                if (resp.ok) {
+                    const reportData = await resp.json();
+                    tenderSpecContent.textContent = reportData.full_markdown;
+                    return;
+                }
+            } catch (e) {
+                console.error("Official report generation failed:", e);
+            }
+        }
+        tenderSpecContent.textContent = generateTenderSpecText();
     }
 
     document.getElementById("btn-header-tender-spec").addEventListener("click", openTenderSpecModal);
@@ -1531,7 +1801,7 @@ rejected as technically non-responsive without further evaluation.
 
     btnCopySpec.addEventListener("click", () => {
         navigator.clipboard.writeText(tenderSpecContent.textContent).then(() => {
-            showToast("Tender Specification copied to clipboard!", "success");
+            showToast("Official Tender Specification Report copied to clipboard!", "success");
         });
     });
 
@@ -1541,22 +1811,35 @@ rejected as technically non-responsive without further evaluation.
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `GeM_Tender_Technical_Specification_IS_Compliance.md`;
+        a.download = `GeM_Tender_Specification_Report_13_Sections.md`;
         a.click();
         URL.revokeObjectURL(url);
-        showToast("Specification downloaded successfully.", "success");
+        showToast("Official 13-Section Tender Specification Report downloaded.", "success");
     });
 
     // --- DOWNLOAD REPORT (PRINT / SAVE AS PDF) ---
     function triggerDownloadReport() {
+        if (!currentData || !currentData.primary_recommendations || currentData.primary_recommendations.length === 0) {
+            showToast("Please search for a requirement with applicable standards before generating tender report.", "warning");
+            return;
+        }
+        if (modalTenderSpec) modalTenderSpec.classList.add("hidden");
+        switchView("dashboard");
         showToast("Preparing official printable Government Tender Report...", "info");
         setTimeout(() => {
             window.print();
         }, 300);
     }
 
-    document.getElementById("btn-header-download-pdf").addEventListener("click", triggerDownloadReport);
-    document.getElementById("btn-card-download-pdf").addEventListener("click", triggerDownloadReport);
+    const btnHeaderDownloadPdf = document.getElementById("btn-header-download-pdf");
+    if (btnHeaderDownloadPdf) btnHeaderDownloadPdf.addEventListener("click", triggerDownloadReport);
+
+    const btnCardDownloadPdf = document.getElementById("btn-card-download-pdf");
+    if (btnCardDownloadPdf) btnCardDownloadPdf.addEventListener("click", triggerDownloadReport);
+
+    const btnPrintTenderSpec = document.getElementById("btn-print-tender-spec");
+    if (btnPrintTenderSpec) btnPrintTenderSpec.addEventListener("click", triggerDownloadReport);
+
 
     // --- USER PROFILE MODAL ---
     const modalProfile = document.getElementById("modal-profile");

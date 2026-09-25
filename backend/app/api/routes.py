@@ -14,7 +14,8 @@ from backend.app.schemas.standard_schemas import (
     ProcurementRequirementRequest,
     RecommendationResponse,
     ReferenceSchema,
-    AmendmentSchema
+    AmendmentSchema,
+    TenderReportResponse
 )
 from backend.app.retrieval.search_engine import HybridSearchEngine
 from backend.app.recommendation.engine import ProcurementRecommendationEngine
@@ -188,6 +189,16 @@ def recommend_standards(body: ProcurementRequirementRequest, db: Session = Depen
     res.detected_language = detected_lang
     res.translated_query = translated_query
     return res
+
+@router.post("/generate-tender-report", response_model=TenderReportResponse, tags=["Recommendation"])
+def generate_tender_report(rec: RecommendationResponse):
+    """
+    Generates an official 13-section GeM/CPWD Professional Tender Specification Report
+    strictly from the validated recommendation response. Zero hallucination.
+    """
+    from backend.app.recommendation.report_generator import TenderReportGenerator
+    return TenderReportGenerator.generate_report(rec)
+
 
 @router.post("/translate", response_model=TranslationResponse, tags=["Multilingual"])
 def translate_text(body: TranslationRequest):

@@ -32,16 +32,30 @@ class ProcurementRecommendationEngine:
     def recommend(self, req: ProcurementRequirementRequest) -> RecommendationResponse:
         start_time = time.time()
 
-        # 1. NLP Understanding & Entity Extraction with Canonical Concept Normalization
+        # 1. Procurement / Technical Intent Check
+        intent = ProcurementNLPExtractor.classify_procurement_intent(req.requirement)
+        if not intent.get("is_valid", False):
+            elapsed_ms = round((time.time() - start_time) * 1000, 2)
+            return RecommendationResponse(
+                status="no_relevant_results",
+                message="No relevant Indian Standards found for the given requirement.",
+                is_valid_procurement_query=False,
+                query=req.requirement,
+                extracted_entities=ExtractedEntities(),
+                primary_recommendations=[],
+                allied_references=[],
+                safety_compliance_guidelines=[],
+                processing_time_ms=elapsed_ms,
+                gap_analysis=None
+            )
+
+        # 2. NLP Understanding & User Specification Extraction
         canonical_req = ProcurementNLPExtractor.canonicalize_query(req.requirement)
         entities: ExtractedEntities = ProcurementNLPExtractor.extract_entities(canonical_req)
+        user_specs = ProcurementNLPExtractor.extract_user_specifications(req.requirement)
         domain = req.domain_hint or entities.domain
 
-        # 2. Universal Live BIS Discovery for ANY Product Category
-        if not req.skip_live_crawl:
-            self._ensure_live_bis_discovery(canonical_req, entities)
-
-        # 3. Hybrid Retrieval & Reranking from updated indexed store
+        # 3. Dense Semantic & Lexical Hybrid Search (Database-first, instant response)
         candidates = self.search_engine.search(
             query=canonical_req,
             domain_filter=domain,
@@ -49,15 +63,57 @@ class ProcurementRecommendationEngine:
             detected_is_numbers=entities.detected_is_numbers
         )
 
+        # Fallback targeted discovery ONLY if zero database candidates found
+        if not candidates and not req.skip_live_crawl:
+            try:
+                self._ensure_live_bis_discovery(canonical_req, entities)
+                candidates = self.search_engine.search(
+                    query=canonical_req,
+                    domain_filter=domain,
+                    top_k=req.top_k,
+                    detected_is_numbers=entities.detected_is_numbers
+                )
+            except Exception:
+                pass
+
+        # Gate: If no candidates passed the semantic relevance gate, return clean no-result
+        if not candidates:
+            elapsed_ms = round((time.time() - start_time) * 1000, 2)
+            return RecommendationResponse(
+                status="no_relevant_results",
+                message="No relevant Indian Standards found for the given requirement.",
+                is_valid_procurement_query=True,
+                query=req.requirement,
+                extracted_entities=entities,
+                primary_recommendations=[],
+                allied_references=[],
+                safety_compliance_guidelines=[],
+                processing_time_ms=elapsed_ms,
+                compliance_summary={
+                    "bis_product": {"status": "Not Applicable", "badge_class": "pill-gray"},
+                    "qco": {"status": "Not Applicable", "badge_class": "pill-gray"},
+                    "crs": {"status": "Not Applicable", "badge_class": "pill-gray"},
+                    "hallmarking": {"status": "Not Applicable", "badge_class": "pill-gray"},
+                    "mandatory_count": 0,
+                    "voluntary_count": 0,
+                    "relevance_tier": "No Relevant Standards Found",
+                    "score_tier_text": "No Relevant Standards Found"
+                },
+                gap_analysis=None
+            )
+
         primary_recommendations: List[RecommendationItem] = []
         allied_references_map: Dict[str, ReferenceSchema] = {}
         safety_guidelines: List[str] = []
         evaluated_candidates_meta: List[Dict[str, Any]] = []
 
+        # 5. Statutory & Certification Mandate Evaluation (Grounded in database)
         for cand in candidates:
+            std_num = cand.get("standard_number", "")
+
             # Dynamic Statutory & Certification Mandate Evaluation
             cert_meta = CertificationRequirementEngine.evaluate_standard(
-                standard_number=cand.get("standard_number", ""),
+                standard_number=std_num,
                 title=cand.get("title", ""),
                 scope=cand.get("scope", ""),
                 domain=cand.get("domain", "")
@@ -76,23 +132,17 @@ class ProcurementRecommendationEngine:
             cand["mandate_reason"] = mandate_reason
 
             evaluated_candidates_meta.append({
-                "standard_number": cand.get("standard_number"),
+                "standard_number": std_num,
                 "is_mandatory": is_mandatory,
                 "mandate_type": mandate_type,
                 "certification_scheme": scheme,
                 "governing_order": gov_order
             })
 
-            # Refine relevance tier according to score and mandate
-            final_score = cand.get("final_score", 0.8)
-            if final_score >= 0.8:
-                rel_tier = "Primary Mandatory Standard" if is_mandatory else "Primary Recommended Standard (Voluntary)"
-            elif final_score >= 0.45:
-                rel_tier = "Applicable Standard"
-            else:
-                rel_tier = "Allied Reference Standard"
+            final_score = cand.get("final_score", 0.75)
+            rel_tier = cand.get("relevance_tier", "Primary Recommended Standard (Voluntary)")
 
-            # 4. Grounded Explanation Generation based strictly on BIS Scope and Mandate
+            # Grounded explanation based strictly on official BIS scope and mandates
             why_relevant, evidence_quote = self._generate_grounded_explanation(
                 cand=cand,
                 entities=entities,
@@ -104,9 +154,9 @@ class ProcurementRecommendationEngine:
             testing_rel = "Prescribes Sampling & Testing Methods" if st_meta.get("is_testing_related") else "Product Specification"
 
             if st_meta.get("safety_justification"):
-                safety_guidelines.append(f"{cand['standard_number']}: {st_meta['safety_justification']}")
+                safety_guidelines.append(f"{std_num}: {st_meta['safety_justification']}")
             elif is_mandatory and gov_order and gov_order != "None (Voluntary Standard)":
-                safety_guidelines.append(f"{cand['standard_number']}: Mandatory conformity required under {gov_order}.")
+                safety_guidelines.append(f"{std_num}: Mandatory conformity required under {gov_order}.")
 
             cand_refs = []
             for r in cand.get("references", []):
@@ -131,7 +181,7 @@ class ProcurementRecommendationEngine:
             ]
 
             rec_item = RecommendationItem(
-                standard_number=cand["standard_number"],
+                standard_number=std_num,
                 title=cand["title"],
                 publication_year=cand.get("publication_year"),
                 reaffirmed_year=cand.get("reaffirmed_year"),
@@ -165,7 +215,14 @@ class ProcurementRecommendationEngine:
             )
             primary_recommendations.append(rec_item)
 
-        # Dynamic Compliance Synthesis across all identified standards
+        # 6. Specification Gap Detection
+        gap_analysis = ProcurementNLPExtractor.detect_specification_gaps(
+            product_category=entities.product_category,
+            user_specs=user_specs,
+            domain=domain
+        )
+
+        # 7. Dynamic Compliance Synthesis
         compliance_summary = CertificationRequirementEngine.evaluate_procurement_compliance(
             query=req.requirement,
             evaluated_candidates=evaluated_candidates_meta
@@ -177,14 +234,19 @@ class ProcurementRecommendationEngine:
         elapsed_ms = round((time.time() - start_time) * 1000, 2)
 
         return RecommendationResponse(
+            status="success",
+            message=None,
+            is_valid_procurement_query=True,
             query=req.requirement,
             extracted_entities=entities,
             primary_recommendations=primary_recommendations,
             allied_references=list(allied_references_map.values())[:12],
             safety_compliance_guidelines=list(set(safety_guidelines))[:5],
             processing_time_ms=elapsed_ms,
-            compliance_summary=compliance_summary
+            compliance_summary=compliance_summary,
+            gap_analysis=gap_analysis
         )
+
 
     def _ensure_live_bis_discovery(self, query: str, entities: ExtractedEntities):
         search_terms = []
@@ -200,6 +262,12 @@ class ProcurementRecommendationEngine:
         # 3. Extract core meaningful words
         words = re.findall(r'[a-zA-Z]+', query.lower())
         meaningful = [w for w in words if len(w) > 2 and w not in ProcurementNLPExtractor.STOP_WORDS]
+
+        # Polysemy guard: do not crawl isolated deceptive food tokens for gold biscuit
+        if any(w in query.lower() for w in ["gold", "silver", "bullion", "hallmark", "hallmarking"]):
+            meaningful = [w for w in meaningful if w not in ["biscuit", "biscuits"]]
+            if "gold" in query.lower() and "gold bullion" not in search_terms:
+                search_terms.extend(["refined gold bars", "gold bullion", "gold fineness"])
         
         for w in meaningful:
             if w not in search_terms:
@@ -222,8 +290,8 @@ class ProcurementRecommendationEngine:
                 for r in records:
                     self.pipeline.ingest_standard_record(r)
                     newly_ingested = True
-            except Exception as e:
-                print(f"[LIVE DISCOVERY WARNING] Error searching '{term}': {e}")
+            except Exception:
+                pass
 
         if newly_ingested:
             self.search_engine._refresh_vector_index()

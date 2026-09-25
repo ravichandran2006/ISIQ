@@ -2489,16 +2489,8 @@ body {
     }
 }
 
-@media (max-width: 900px) {
-    .left-sidebar {
-        width: 64px;
-        min-width: 64px;
-        padding: 12px 6px;
-    }
-    .sidebar-item span {
-        display: none;
-    }
-    .sidebar-footer-watermark {
+@media (max-width: 1024px) {
+    .header-center-banner {
         display: none;
     }
     .grid-two-col {
@@ -2506,9 +2498,6 @@ body {
     }
     .stats-summary-grid {
         grid-template-columns: repeat(2, 1fr);
-    }
-    .header-center-banner {
-        display: none;
     }
     .rec-card-body {
         flex-direction: column;
@@ -2921,3 +2910,597 @@ body {
     line-height: 1.45;
     margin: 0;
 }
+
+/* ==========================================================================
+   MOBILE & TABLET RESPONSIVE DESIGN SYSTEM (STANDIQ)
+   ========================================================================== */
+
+/* Mobile Hamburger Button (Default hidden on desktop) */
+.mobile-menu-toggle-btn {
+    display: none;
+    background: #FFFFFF;
+    border: 1.5px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--primary-navy);
+    font-size: 16px;
+    width: 38px;
+    height: 38px;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.mobile-menu-toggle-btn:hover {
+    background: #FFF4E6;
+    border-color: var(--saffron-orange);
+    color: var(--saffron-orange);
+}
+
+/* Mobile Sidebar Backdrop Overlay */
+.sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(2px);
+    z-index: 998;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+
+/* --- TABLET & MOBILE BREAKPOINT (<= 768px) --- */
+@media (max-width: 768px) {
+    .mobile-menu-toggle-btn {
+        display: inline-flex;
+    }
+
+    .govt-top-header {
+        height: 60px;
+        padding: 0 12px;
+    }
+
+    .emblem-svg {
+        width: 24px;
+        height: 34px;
+    }
+
+    .emblem-text-group {
+        display: none;
+    }
+
+    .standiq-logo-icon {
+        width: 34px;
+        height: 34px;
+    }
+
+    .standiq-hexagon-svg {
+        width: 32px;
+        height: 32px;
+    }
+
+    .standiq-main-title {
+        font-size: 17px;
+    }
+
+    .standiq-sub-title, .standiq-motto {
+        display: none;
+    }
+
+    .user-meta-info {
+        display: none;
+    }
+
+    .user-profile-widget {
+        padding: 4px;
+        border-radius: 50%;
+        border: none;
+        background: transparent;
+    }
+
+    .main-body-container {
+        position: relative;
+        width: 100%;
+        overflow-x: hidden;
+    }
+
+    /* Off-Canvas Slide Drawer */
+    .left-sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 270px;
+        max-width: 82vw;
+        z-index: 999;
+        transform: translateX(-100%);
+        transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 4px 0 24px rgba(15, 23, 42, 0.22);
+        padding: 20px 14px;
+        background-color: #FAF4EB;
+    }
+
+    body.sidebar-mobile-open .left-sidebar {
+        transform: translateX(0);
+    }
+
+    .sidebar-backdrop {
+        display: block;
+    }
+
+    body.sidebar-mobile-open .sidebar-backdrop {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .sidebar-item span {
+        display: inline-block !important;
+    }
+
+    .sidebar-footer-watermark {
+        display: block !important;
+    }
+
+    .content-viewport {
+        padding: 14px 12px;
+        width: 100%;
+        max-width: 100vw;
+        overflow-x: hidden;
+    }
+
+    /* Composer & Search */
+    .composer-card {
+        padding: 16px;
+    }
+
+    .form-textarea {
+        font-size: 14px;
+        padding: 10px 12px;
+    }
+
+    .filter-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .form-col-action button {
+        width: 100%;
+        justify-content: center;
+        height: 46px;
+        font-size: 14px;
+    }
+
+    .preset-chips-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .preset-chip {
+        white-space: normal;
+        text-align: left;
+        font-size: 12px;
+        padding: 8px 12px;
+        line-height: 1.35;
+    }
+
+    /* Dashboard & Recommendation Header */
+    .welcome-hero-card {
+        flex-direction: column;
+        gap: 12px;
+        padding: 16px 14px;
+    }
+
+    .welcome-right-quote {
+        display: none;
+    }
+
+    .rec-card-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .rec-header-actions {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        gap: 8px;
+    }
+
+    .rec-header-actions button {
+        width: 100%;
+        justify-content: center;
+        padding: 10px 14px;
+    }
+
+    .rec-card-body {
+        flex-direction: column;
+        gap: 14px;
+        padding: 14px 16px;
+    }
+
+    .stats-summary-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .grid-two-col {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    /* Standard Cards on Mobile */
+    .standards-cards-list {
+        padding: 10px 0;
+        gap: 12px;
+    }
+
+    .standard-lifecycle-card {
+        padding: 14px 12px;
+    }
+
+    .std-card-top-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .std-actions-right {
+        width: 100%;
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+    }
+
+    .lifecycle-flow-row {
+        display: flex;
+        align-items: center;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        gap: 6px;
+        padding-bottom: 8px;
+    }
+
+    .lifecycle-step-pill {
+        flex-shrink: 0;
+        font-size: 11px;
+        padding: 4px 8px;
+    }
+
+    /* Modals on Mobile */
+    .modal-dialog {
+        width: 95vw !important;
+        max-width: 95vw !important;
+        max-height: 92vh !important;
+        margin: 10px auto !important;
+        border-radius: 10px !important;
+    }
+
+    .modal-header {
+        padding: 12px 14px !important;
+    }
+
+    .modal-body {
+        padding: 14px !important;
+    }
+
+    .modal-footer {
+        padding: 12px 14px !important;
+        flex-direction: column-reverse;
+        gap: 8px;
+    }
+
+    .modal-footer button {
+        width: 100%;
+        justify-content: center;
+        padding: 10px;
+    }
+
+    /* Horizontal scroll for wide tables */
+    .table-responsive-wrapper, .history-table-container, .compliance-table-wrap, .table-container {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* --- SMALL MOBILE BREAKPOINT (<= 480px) --- */
+@media (max-width: 480px) {
+    .header-left-brand {
+        gap: 6px;
+    }
+
+    .brand-identity-wrap .standiq-main-title {
+        font-size: 15px;
+    }
+
+    .header-lang-picker {
+        padding: 3px 6px;
+    }
+
+    .header-lang-picker .lang-dropdown {
+        font-size: 11px;
+    }
+
+    .flag-pin-badge {
+        display: none;
+    }
+
+    .btn-action-navy, .btn-action-orange, .btn-action-outline {
+        padding: 9px 14px;
+        font-size: 12.5px;
+    }
+
+    .grid-three-col {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+
+    .card-full-span-tablet {
+        grid-column: 1 / -1 !important;
+    }
+}
+
+/* ==========================================================================
+   MISSING TECHNICAL SPECIFICATIONS TABLE & PARAMETER AUDIT
+   ========================================================================== */
+.card-full-span-tablet {
+    grid-column: 1 / -1;
+}
+
+.missing-params-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+    background: #FFFFFF;
+}
+
+.missing-params-table th {
+    background: #F8FAFC;
+    color: #1E293B;
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 9px 12px;
+    border-bottom: 2px solid #E2E8F0;
+    text-align: left;
+}
+
+.missing-params-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #F1F5F9;
+    color: #334155;
+    vertical-align: middle;
+}
+
+.missing-params-table tbody tr:hover {
+    background: #FFFBF5;
+}
+
+/* Status & Risk Badge Color Helpers */
+.badge-pill-status.pill-red {
+    background: #FEF2F2 !important;
+    color: #DC2626 !important;
+    border: 1px solid #FECACA !important;
+}
+
+.badge-pill-status.pill-orange {
+    background: #FFF4E6 !important;
+    color: #EA580C !important;
+    border: 1px solid #FCD9B8 !important;
+}
+
+.badge-pill-status.pill-green {
+    background: #F0FDF4 !important;
+    color: #16A34A !important;
+    border: 1px solid #BBF7D0 !important;
+}
+
+.badge-pill-status.pill-blue {
+    background: #EFF6FF !important;
+    color: #2563EB !important;
+    border: 1px solid #BFDBFE !important;
+}
+
+.badge-pill-status.pill-gray {
+    background: #F1F5F9 !important;
+    color: #64748B !important;
+    border: 1px solid #E2E8F0 !important;
+}
+
+/* Printable Header & Signatures (Default Hidden on Screen) */
+.print-tender-header, .print-tender-signatures {
+    display: none;
+}
+
+/* ==========================================================================
+   OFFICIAL BLACK & WHITE TENDER-READY PRINT STYLESHEET (ISSUE #6)
+   ========================================================================== */
+@media print {
+    @page {
+        size: A4 portrait;
+        margin: 14mm 14mm 14mm 14mm;
+    }
+
+    /* Force pure black and white */
+    *, *::before, *::after {
+        background: #FFFFFF !important;
+        color: #000000 !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+        border-color: #000000 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    /* Hide Web Controls, Navbars, Sidebars, Modals & Interactive Buttons */
+    .govt-top-header,
+    .left-sidebar,
+    .sidebar-backdrop,
+    .rec-header-actions,
+    .btn-action-navy,
+    .btn-action-orange,
+    .btn-action-outline,
+    .btn-box-outline,
+    .btn-view-evidence-table,
+    .btn-ai-explain-table,
+    .std-actions-right,
+    .app-toast-container,
+    .welcome-hero-card,
+    .modal-backdrop-layer,
+    #modal-evidence,
+    #modal-ai-explanation,
+    #modal-profile,
+    #modal-logout,
+    #modal-benchmark,
+    #modal-tender-spec,
+    .mobile-menu-toggle-btn,
+    .header-lang-picker,
+    .flag-pin-badge,
+    .empty-dashboard-placeholder button,
+    #btn-refine-requirement {
+        display: none !important;
+    }
+
+    body, .app-wrapper, .main-body-container, .content-viewport {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        background: #FFFFFF !important;
+        font-family: "Times New Roman", Times, Georgia, serif !important;
+        font-size: 10.5pt !important;
+        line-height: 1.4 !important;
+    }
+
+    /* Official Government Tender Header */
+    .print-tender-header {
+        display: block !important;
+        text-align: center;
+        border-bottom: 2px solid #000000;
+        padding-bottom: 10px;
+        margin-bottom: 16px;
+    }
+
+    .print-tender-header .govt-title {
+        font-size: 14pt;
+        font-weight: bold;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        margin-bottom: 2px;
+    }
+
+    .print-tender-header .annexure-title {
+        font-size: 11pt;
+        font-weight: bold;
+        margin-bottom: 4px;
+    }
+
+    .print-tender-header .sub-authority {
+        font-size: 9pt;
+        font-style: italic;
+    }
+
+    /* Card styling in print mode */
+    .card, .dashboard-card, .standard-lifecycle-card, .recommendation-master-card {
+        border: 1px solid #000000 !important;
+        border-radius: 0 !important;
+        padding: 10px 12px !important;
+        margin-bottom: 12px !important;
+        page-break-inside: avoid;
+    }
+
+    .card-header-bar {
+        border-bottom: 1px solid #000000 !important;
+        padding-bottom: 6px !important;
+        margin-bottom: 8px !important;
+        font-weight: bold !important;
+        font-size: 11pt !important;
+    }
+
+    /* Data Tables */
+    table, th, td {
+        border: 1px solid #000000 !important;
+        border-collapse: collapse !important;
+        color: #000000 !important;
+        font-size: 9pt !important;
+        padding: 6px 8px !important;
+    }
+
+    th {
+        font-weight: bold !important;
+        background: #F0F0F0 !important;
+        text-transform: uppercase;
+    }
+
+    .stats-summary-grid {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 8px !important;
+        margin-bottom: 12px !important;
+        page-break-inside: avoid;
+    }
+
+    .grid-two-col, .grid-three-col {
+        display: block !important;
+    }
+
+    .grid-two-col > .card, .grid-three-col > .card {
+        margin-bottom: 12px !important;
+        page-break-inside: avoid;
+    }
+
+    /* Standard Cards */
+    .standard-lifecycle-card {
+        border-left: 3px solid #000000 !important;
+    }
+
+    .standard-lifecycle-box {
+        border: 1px solid #000000 !important;
+        background: transparent !important;
+        padding: 8px !important;
+        margin-top: 6px !important;
+    }
+
+    .lifecycle-step-pill {
+        border: 1px solid #000000 !important;
+        padding: 2px 6px !important;
+        font-size: 8.5pt !important;
+    }
+
+    .badge-pill-status, .badge-pill-card {
+        border: 1px solid #000000 !important;
+        background: transparent !important;
+        color: #000000 !important;
+        padding: 1px 6px !important;
+        font-size: 8.5pt !important;
+        font-weight: normal !important;
+    }
+
+    /* Print Footer & Signatures */
+    .print-tender-signatures {
+        display: block !important;
+        margin-top: 28px;
+        page-break-inside: avoid;
+    }
+
+    .sig-row {
+        display: flex !important;
+        justify-content: space-between !important;
+        margin-top: 40px;
+    }
+
+    .sig-col {
+        width: 45%;
+        border-top: 1px solid #000000;
+        padding-top: 6px;
+        font-size: 9pt;
+        text-align: center;
+    }
+}
+

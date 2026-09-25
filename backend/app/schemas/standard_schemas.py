@@ -120,13 +120,46 @@ class RecommendationItem(BaseModel):
     evidence_quote: Optional[str] = None
     evidence_source_type: str = "Official BIS Standard Preview & Scope"
 
+class SpecificationGapItem(BaseModel):
+    parameter: str
+    user_provided: Optional[str] = None
+    status: str = "RECOMMENDED"  # "PROVIDED", "MISSING", "RECOMMENDED", "AMBIGUOUS"
+    recommendation: str
+    risk_level: Optional[str] = "Moderate"  # "High", "Moderate", "Low", "Conformant"
+
+class SpecificationGapAnalysis(BaseModel):
+    product_identified: Optional[str] = None
+    is_complete: bool = False
+    completeness_summary: str = ""
+    user_specifications: Dict[str, str] = {}
+    missing_specifications: List[str] = []
+    gap_matrix: List[SpecificationGapItem] = []
+
 class RecommendationResponse(BaseModel):
+    status: str = "success"  # "success" or "no_relevant_results"
+    message: Optional[str] = None
+    is_valid_procurement_query: bool = True
     query: str
     extracted_entities: ExtractedEntities
-    primary_recommendations: List[RecommendationItem]
-    allied_references: List[ReferenceSchema]
-    safety_compliance_guidelines: List[str]
-    processing_time_ms: float
+    primary_recommendations: List[RecommendationItem] = []
+    allied_references: List[ReferenceSchema] = []
+    safety_compliance_guidelines: List[str] = []
+    processing_time_ms: float = 0.0
     detected_language: Optional[str] = "en"
     translated_query: Optional[str] = None
     compliance_summary: Optional[Dict[str, Any]] = None
+    gap_analysis: Optional[SpecificationGapAnalysis] = None
+
+class TenderReportSection(BaseModel):
+    section_number: int
+    title: str
+    content: str
+    is_available: bool = True
+
+class TenderReportResponse(BaseModel):
+    query: str
+    generated_at: str
+    product_identified: Optional[str] = None
+    sections: List[TenderReportSection] = []
+    full_markdown: str
+

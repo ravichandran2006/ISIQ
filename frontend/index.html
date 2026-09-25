@@ -24,6 +24,9 @@
         <header class="govt-top-header">
             <!-- Left: Government of India Emblem & Brand -->
             <div class="header-left-brand">
+                <button class="mobile-menu-toggle-btn" id="btn-mobile-menu-toggle" aria-label="Toggle navigation menu">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
                 <!-- Ashoka Stambh Lion Capital Emblem -->
                 <div class="emblem-container" title="Government of India / भारत सरकार">
                     <svg class="emblem-svg" viewBox="0 0 100 135" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -195,6 +198,9 @@
             </div>
         </header>
 
+        <!-- Mobile Sidebar Backdrop Overlay -->
+        <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
         <!-- ==========================================================================
              MAIN CONTAINER (SIDEBAR + CONTENT VIEWPORT)
              ========================================================================== -->
@@ -202,11 +208,11 @@
             <!-- Left Sidebar -->
             <aside class="left-sidebar">
                 <nav class="sidebar-menu">
-                    <button class="sidebar-item active" data-view="dashboard" id="side-dashboard">
+                    <button class="sidebar-item" data-view="dashboard" id="side-dashboard">
                         <i class="fa-solid fa-house"></i>
                         <span data-i18n="nav_home">Dashboard</span>
                     </button>
-                    <button class="sidebar-item" data-view="search" id="side-search">
+                    <button class="sidebar-item active" data-view="search" id="side-search">
                         <i class="fa-solid fa-magnifying-glass"></i>
                         <span data-i18n="nav_search">Search Standards</span>
                     </button>
@@ -289,10 +295,17 @@
                     </div>
                 </div>
 
+                <!-- PRINT ONLY OFFICIAL GOVERNMENT TENDER HEADER -->
+                <div class="print-tender-header">
+                    <div class="govt-title">GOVERNMENT OF INDIA &bull; BHARAT SARKAR</div>
+                    <div class="annexure-title">OFFICIAL TECHNICAL TENDER SPECIFICATION ANNEXURE &bull; MANDATORY BIS COMPLIANCE DIRECTIVE</div>
+                    <div class="sub-authority">Verified Conformance Report Generated via StandIQ Official Discovery Engine &bull; GeM / CPWD Compliant</div>
+                </div>
+
                 <!-- ==========================================================================
-                     VIEW 1: STANDIQ DASHBOARD / RECOMMENDATION RESULTS (Active View)
+                     VIEW 1: STANDIQ DASHBOARD / RECOMMENDATION RESULTS
                      ========================================================================== -->
-                <section id="view-dashboard" class="app-view active">
+                <section id="view-dashboard" class="app-view">
                     <!-- HERO CARD: Welcome to StandIQ -->
                     <div class="card welcome-hero-card">
                         <div class="welcome-left-content">
@@ -789,24 +802,34 @@
                     <!-- THREE-COLUMN BOTTOM ROW: CARD 7, CARD 8, CARD 9 -->
                     <div class="grid-three-col">
                         <!-- CARD 7: 7. MISSING / AMBIGUOUS INFORMATION -->
-                        <div class="card dashboard-card">
+                        <div class="card dashboard-card card-full-span-tablet">
                             <div class="card-header-bar">
                                 <div class="card-header-title">
                                     <i class="fa-solid fa-triangle-exclamation section-icon text-warning"></i>
-                                    <span>7. Missing / Ambiguous Information</span>
+                                    <span>7. Missing / Ambiguous Information Matrix</span>
                                 </div>
+                                <span class="badge-pill-status pill-orange" id="badge-missing-count">Parameter Audit</span>
                             </div>
                             <div class="card-content-body">
-                                <p class="card-intro-note">The following information could improve standards matching precision:</p>
-                                <ul class="bullet-list-missing" id="list-missing-info">
-                                    <li>Specified load capacity not mentioned</li>
-                                    <li>Tray width, height, and thickness not specified</li>
-                                    <li>Environmental conditions not specified</li>
-                                    <li>Coating type and thickness not mentioned</li>
-                                </ul>
+                                <p class="card-intro-note" id="missing-info-summary">The following parameter audit specifies missing, ambiguous, and conformant technical parameters:</p>
+                                <div class="table-responsive-wrapper" style="margin: 12px 0 16px 0; max-height: 360px; overflow-y: auto;">
+                                    <table class="data-table missing-params-table" id="table-missing-info">
+                                        <thead>
+                                            <tr>
+                                                <th style="min-width: 140px;">Technical Parameter</th>
+                                                <th style="min-width: 90px;">Status</th>
+                                                <th style="min-width: 200px;">Recommended Specification & Guidance</th>
+                                                <th style="min-width: 85px; text-align: center;">Tender Risk</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tbody-missing-info">
+                                            <!-- Dynamically populated -->
+                                        </tbody>
+                                    </table>
+                                </div>
 
-                                <button class="btn-box-outline btn-full-width" style="margin-top: 24px;" id="btn-refine-requirement">
-                                    Refine Requirement
+                                <button class="btn-box-outline btn-full-width" style="margin-top: 8px;" id="btn-refine-requirement">
+                                    <i class="fa-solid fa-pen-to-square"></i> Refine Requirement With Missing Parameters
                                 </button>
                             </div>
                         </div>
@@ -901,12 +924,28 @@
                             </div>
                         </div>
                     </div>
+                    <!-- PRINT ONLY OFFICIAL TENDER SIGNATURES -->
+                    <div class="print-tender-signatures">
+                        <div style="font-size: 9pt; margin-bottom: 8px;"><strong>STATUTORY COMPLIANCE DECLARATION:</strong> All goods supplied must conform strictly to the active Bureau of Indian Standards (BIS) specifications, Quality Control Orders (QCO), and certified amendments detailed herein. Any deviation or non-certified supply shall result in summary technical disqualification and rejection under General Financial Rules (GFR).</div>
+                        <div class="sig-row">
+                            <div class="sig-col">
+                                <strong>PREPARED & VERIFIED BY</strong><br>
+                                Procurement / Technical Tender Officer<br>
+                                Date & Seal: _____________________
+                            </div>
+                            <div class="sig-col">
+                                <strong>BIDDER / VENDOR CONFORMANCE ACCEPTANCE</strong><br>
+                                Authorized Signatory with Company Seal<br>
+                                Date: ___________________________
+                            </div>
+                        </div>
+                    </div>
                 </section>
 
                 <!-- ==========================================================================
-                     VIEW 2: SEARCH STANDARDS VIEW
+                     VIEW 2: SEARCH STANDARDS VIEW (Default Active)
                      ========================================================================== -->
-                <section id="view-search" class="app-view">
+                <section id="view-search" class="app-view active">
                     <div class="view-header">
                         <h2><i class="fa-solid fa-magnifying-glass"></i> Search & Discover Applicable Indian Standards</h2>
                         <p>Input your technical procurement requirement, specification clauses, or search directly by IS number.</p>
@@ -1324,6 +1363,9 @@
             <div class="modal-footer">
                 <button class="btn-action-outline" id="btn-copy-tender-spec">
                     <i class="fa-regular fa-copy"></i> Copy to Clipboard
+                </button>
+                <button class="btn-action-outline" id="btn-print-tender-spec">
+                    <i class="fa-solid fa-print"></i> Print Tender Report
                 </button>
                 <button class="btn-action-navy" id="btn-download-tender-spec-file">
                     <i class="fa-solid fa-file-arrow-down"></i> Download Specification (.md)
