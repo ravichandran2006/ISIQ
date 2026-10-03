@@ -140,7 +140,14 @@ class ProcurementRecommendationEngine:
             })
 
             final_score = cand.get("final_score", 0.75)
-            rel_tier = cand.get("relevance_tier", "Primary Recommended Standard (Voluntary)")
+            if is_mandatory and final_score >= 0.65:
+                rel_tier = "Primary Mandatory Standard"
+            elif not is_mandatory and final_score >= 0.65:
+                rel_tier = "Primary Recommended Standard (Voluntary)"
+            elif final_score >= 0.50:
+                rel_tier = "Applicable Standard"
+            else:
+                rel_tier = "Allied Reference Standard"
 
             # Grounded explanation based strictly on official BIS scope and mandates
             why_relevant, evidence_quote = self._generate_grounded_explanation(

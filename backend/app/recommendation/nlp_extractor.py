@@ -15,9 +15,14 @@ class ProcurementNLPExtractor:
 
     STOP_WORDS = {
         "procure", "procurement", "purchase", "purchasing", "supply", "supplying", "tender",
-        "requirement", "need", "install", "installation", "for", "with", "and", "under",
+        "requirement", "requirements", "need", "install", "installation", "for", "with", "and", "under",
         "from", "the", "a", "an", "of", "in", "to", "units", "nos", "numbers", "bags",
-        "meters", "kg", "tons", "packets", "certified", "standard", "quality", "government"
+        "meters", "kg", "tons", "packets", "certified", "standard", "quality", "government",
+        "technical", "specifications", "specification", "proposed", "details", "latest",
+        "service", "pack", "available", "website", "warranty", "period", "make", "model",
+        "type", "generation", "higher", "better", "pre", "loaded", "preloaded", "must",
+        "item", "items", "scope", "clause", "description", "conformance", "conformity",
+        "compliance", "compliant", "brand", "oem"
     }
 
     SYNONYM_MAP = {
@@ -65,6 +70,13 @@ class ProcurementNLPExtractor:
         "wiring": "wiring cable",
         "extinguisher": "fire extinguisher",
         "light luminaire": "street light luminaire",
+        "desktop pc": "desktop computer",
+        "desktop pcs": "desktop computer",
+        "desktop computers": "desktop computer",
+        "desktop": "desktop computer",
+        "personal computer": "desktop computer",
+        "personal computers": "desktop computer",
+        "pc": "desktop computer",
         "portable computer": "laptop",
         "portable computers": "laptop",
         "notebook computer": "laptop",
@@ -96,16 +108,27 @@ class ProcurementNLPExtractor:
         "Civil Engineering": [
             "cement", "portland", "concrete", "steel", "tmt", "rebar", "bar", "bars", "rod",
             "rods", "brick", "aggregate", "pipe", "hdpe", "pvc pipe", "structural steel",
-            "tiles", "water meter", "sanitary", "glaze"
+            "tiles", "water meter", "sanitary", "glaze", "lime", "limes", "building lime",
+            "building limes", "masonry", "structural member", "light gauge", "cold formed",
+            "storage tank", "storage tanks", "tank", "tanks", "welded tank", "fly ash", "pozzolana",
+            "admixture", "admixtures", "bitumen", "prestressed", "lintel", "lintels", "sill", "sills",
+            "cellular concrete", "bamboo", "earthquake"
         ],
         "Electronics and Information Technology": [
-            "computer", "computers", "laptop", "laptops", "server", "servers", "software",
+            "computer", "computers", "desktop", "desktop computer", "pc", "personal computer",
+            "laptop", "laptops", "server", "servers", "software", "workstation",
+            "processor", "chipset", "motherboard", "operating system", "windows",
             "biometric", "cctv", "monitor", "router", "telecom", "printer", "notebook",
             "communication", "display", "storage"
         ],
         "Mechanical Engineering": [
             "fire extinguisher", "pump", "valve", "engine", "compressor", "crane", "cylinder",
-            "bearing", "extinguisher", "oxygen cylinder", "centrifuge", "machinery", "machine"
+            "bearing", "extinguisher", "oxygen cylinder", "centrifuge", "machinery", "machine",
+            "grease", "nipple", "nipples", "grease nipple", "grease nipples", "conical head",
+            "lubrication", "fastener", "fasteners", "welded", "welding", "storage tank",
+            "hoist", "hoists", "wire rope", "cranes", "bolt", "bolts", "screw", "screws",
+            "nut", "nuts", "drill bush", "jig", "thrust pad", "set collar", "bulk handling",
+            "ship loader", "duct", "ducts"
         ],
         "Personal Protective Equipment & Safety": [
             "mask", "n95", "helmet", "safety shoe", "safety shoes", "footwear", "gloves",
@@ -118,6 +141,17 @@ class ProcurementNLPExtractor:
     }
 
     PRODUCT_STANDARD_PARAMETERS = {
+        "desktop": [
+            {"parameter": "Processor Make, Architecture & Generation", "recommendation": "Specify processor make (e.g. Intel Core i7 / AMD Ryzen 7), minimum generation (e.g. 12th Gen or higher), and clock speeds.", "risk": "High"},
+            {"parameter": "Chipset & Motherboard Architecture", "recommendation": "Specify chipset series (e.g. Intel Q670/B660 series or better) with appropriate form factor (Tower / Small Form Factor).", "risk": "High"},
+            {"parameter": "RAM (Memory) Capacity & Expandability", "recommendation": "Specify RAM capacity (e.g. 16GB / 32GB DDR4/DDR5) and expandability with minimum 2-4 DIMM slots.", "risk": "High"},
+            {"parameter": "Primary Solid State Storage (SSD)", "recommendation": "Specify solid-state storage capacity (e.g. 512GB / 1TB PCIe NVMe SSD) with high read/write throughput.", "risk": "High"},
+            {"parameter": "Factory Pre-loaded Operating System", "recommendation": "Specify OEM factory pre-loaded OS (e.g. Windows 11 Professional 64-bit) with digital OEM license and recovery partition.", "risk": "Moderate"},
+            {"parameter": "Electrical Safety & MeitY CRS Mandate", "recommendation": "Mandatory conformity to IS 13252 (Part 1) / IEC 60950-1 or IS/IEC 62368-1 under MeitY Compulsory Registration Scheme (CRS).", "risk": "High"},
+            {"parameter": "Energy Consumption & BEE Star Rating", "recommendation": "Conformity to IS/IEC 62623 for measurement of electrical power consumption and BEE energy star rating compliance.", "risk": "Moderate"},
+            {"parameter": "Power Supply Unit (PSU) & Efficiency", "recommendation": "Specify internal power supply unit with minimum 80 PLUS Bronze/Gold certification conforming to IS 14700 EMC harmonics.", "risk": "Moderate"},
+            {"parameter": "Comprehensive OEM Warranty & Driver Support", "recommendation": "Specify minimum 3-year or 5-year OEM on-site comprehensive warranty with official OEM driver portal availability.", "risk": "Moderate"}
+        ],
         "washing machine": [
             {"parameter": "Rated Wash & Spin Capacity (kg)", "recommendation": "Specify nominal dry linen wash load capacity (e.g., 7.0 kg, 8.5 kg, or 10.0 kg).", "risk": "High"},
             {"parameter": "Loading Architecture & Tub Configuration", "recommendation": "Specify Top Load Fully-Automatic, Front Load Fully-Automatic, or Semi-Automatic twin tub.", "risk": "High"},
@@ -199,10 +233,13 @@ class ProcurementNLPExtractor:
         r"\bwhat is the weather\b", r"\bwho won\b", r"\bwho is\b", r"\bwho are you\b",
         r"\bwhat are you\b", r"\bcricket match\b", r"\bfootball match\b", r"\bi like\b",
         r"\bwhat do you think\b", r"\bwrite a poem\b", r"\bwho created you\b",
-        r"\bhuman\s+error\b", r"\bsystem\s+error\b", r"^(?:error|mistake|blunder|bug)\b",
+        r"\bhuman\s+(?:mistake|error|blunder|fault)\b",
+        r"\b(?:mistake|error|blunder|bug|fault|glitch|typo)\b",
+        r"\b(?:nonsense|garbage|gibberish|meaningless|useless|irrelevant|wrong input|invalid input|random text)\b",
         r"\b(?:thank\s*you|thanks|thx)\b", r"\b(?:bye|goodbye|see you)\b",
         r"\bwhat('s| is) (?:up|this|that|your name|life|love)\b",
-        r"^(?:test|testing|sample|check|asdf|qwerty)\b"
+        r"^(?:test|testing|sample|check|asdf|qwerty)\b",
+        r"^(?:why|how to|where to|when to|who is|can you|could you|please tell|tell me)\b"
     ]
 
     @classmethod
@@ -242,8 +279,16 @@ class ProcurementNLPExtractor:
             "cloth", "clothes", "water", "air", "electric", "power", "solar", "steel",
             "cement", "cable", "wire", "pipe", "tube", "valve", "light", "panel", "tank",
             "motor", "engine", "fan", "iron", "cooler", "fridge", "purifier", "refrigerator",
-            "textile", "extinguisher", "switchgear", "generator", "transformer"
+            "textile", "extinguisher", "switchgear", "generator", "transformer", "grease", "lime"
         ]
+
+        # Standard title / codal specification patterns
+        standard_title_patterns = [
+            r'\b(?:specification\s+for|code\s+of\s+practice(?:\s+for)?|method(?:s)?\s+of\s+test(?:\s+for)?|requirements?\s+for|standard\s+for|general\s+construction\s+in|guidelines?\s+for|schedule\s+of|handbook\s+on)\b',
+            r'\b(?:first|second|third|fourth|fifth|\d+(?:st|nd|rd|th)?)\s+revision\b',
+            r'\bpart\s*[:\-]?\s*(?:\d+|[ivxcdm]+)\b'
+        ]
+        has_standard_spec_pattern = any(re.search(pat, lower) for pat in standard_title_patterns)
 
         has_is_code = bool(re.search(r'\bis\s*[:\-]?\s*\d+', lower))
         has_unit = any(re.search(r'\b' + re.escape(u) + r'\b', lower) for u in technical_units)
@@ -262,12 +307,16 @@ class ProcurementNLPExtractor:
             "light", "luminaire", "meter", "biscuit", "food", "flour", "rebar", "concrete",
             "surgical", "instrument", "gold", "silver", "bullion", "hallmark", "gold bar",
             "gold biscuit", "jewellery", "jewelry", "washing machine", "refrigerator",
-            "air conditioner", "water purifier", "fan", "iron", "heater"
+            "air conditioner", "water purifier", "fan", "iron", "heater", "grease nipple",
+            "grease nipples", "building lime", "building limes", "lime", "limes", "storage tank",
+            "structural members", "welded tank", "nipple", "grease", "fly ash", "pozzolana",
+            "admixture", "bitumen", "hoist", "crane", "bolt", "nut", "screw", "bamboo",
+            "cellular concrete", "wire rope", "lintel", "sill"
         ]
         has_product = any(re.search(r'\b' + re.escape(p) + r'\b', lower) for p in common_products)
 
-        # Allow query if it has IS code, known product, domain word, functional description, or procurement context
-        if has_is_code or has_product or has_domain_word or has_functional_indicator or (has_procure_verb and (has_unit or len(words) >= 2)):
+        # Allow query if it has standard pattern, IS code, known product, domain word, functional description, or procurement context
+        if has_standard_spec_pattern or has_is_code or has_product or has_domain_word or has_functional_indicator or (has_procure_verb and (has_unit or len(words) >= 2)):
             return {"is_valid": True, "reason": "Valid procurement or technical specification."}
 
         # Otherwise, reject general non-procurement phrases
@@ -282,10 +331,19 @@ class ProcurementNLPExtractor:
         specs = {}
         cleaned = text.strip()
 
-        # Processor
-        proc_match = re.search(r'(intel\s+core\s+[iI]\d+|amd\s+ryzen\s+\d+|core\s+[iI]\d+|[iI]\d+\s+processor|octa[- ]core|quad[- ]core|snapdragon\s+\d+)', cleaned, re.IGNORECASE)
+        # Processor & Generation
+        proc_match = re.search(r'(intel\s+core\s+[iI]\d+(?:\s+or\s+higher)?|amd\s+ryzen\s+\d+(?:\s+or\s+higher)?|core\s+[iI]\d+|[iI]\d+\s+processor|octa[- ]core|quad[- ]core|snapdragon\s+\d+)', cleaned, re.IGNORECASE)
         if proc_match:
             specs["Processor"] = proc_match.group(1).strip()
+
+        gen_match = re.search(r'(\d+(?:th|st|nd|rd)?\s+generation(?:\s+or\s+higher)?)', cleaned, re.IGNORECASE)
+        if gen_match:
+            specs["Processor Generation"] = gen_match.group(1).strip()
+
+        # Chipset & Motherboard
+        chip_match = re.search(r'((?:intel|amd)?\s*[QqBbHhZzXx]\s*\d{3,4}(?:/[QqBbHhZzXx]\s*\d{3,4})*\s*(?:series)?(?:\s+or\s+better)?)', cleaned, re.IGNORECASE)
+        if chip_match and ("series" in chip_match.group(1).lower() or re.search(r'[QqBbHhZzXx]\s*\d{3}', chip_match.group(1))):
+            specs["Chipset & Motherboard Architecture"] = chip_match.group(1).strip()
 
         # RAM
         ram_match = re.search(r'(\d+\s*GB\s*(?:DDR\d+)?\s*RAM|\d+\s*GB\s+memory)', cleaned, re.IGNORECASE)
@@ -308,12 +366,12 @@ class ProcurementNLPExtractor:
             specs["Battery & Power"] = bat_match.group(1).strip()
 
         # Warranty
-        war_match = re.search(r'(\d+\s*[- ]?(?:year|yr)\s*warranty)', cleaned, re.IGNORECASE)
+        war_match = re.search(r'(\d+\s*[- ]?(?:year|yr)\s*warranty|warranty\s+period)', cleaned, re.IGNORECASE)
         if war_match:
             specs["Warranty & AMC"] = war_match.group(1).strip()
 
         # Operating System
-        os_match = re.search(r'(windows\s*1[01]|linux|ubuntu|macOS)', cleaned, re.IGNORECASE)
+        os_match = re.search(r'(windows\s*1[01]\s*(?:professional|pro|home)?(?:\s+with\s+[^\.]+)?|linux|ubuntu|macOS)', cleaned, re.IGNORECASE)
         if os_match:
             specs["Operating System"] = os_match.group(1).strip()
 

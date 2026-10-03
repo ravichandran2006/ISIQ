@@ -52,7 +52,7 @@ class BISPreviewParser:
             return None
 
         # Deconstruct Header into Standard Number, Publication Year, and Title
-        std_match = re.search(r'((?:IS|SP)\s+[\d\(\)\-\:\sPart]+?)\s*:\s*(\d{4})\s*[:\-]*(.*)', header_text, re.IGNORECASE)
+        std_match = re.search(r'((?:IS(?:/[A-Z0-9/\-]+)?|SP)\s+[\d\(\)\-\:\sPartA-Z]+?)\s*:\s*(\d{4})\s*[:\-]*(.*)', header_text, re.IGNORECASE)
         
         if std_match:
             standard_number = std_match.group(1).strip()
@@ -62,14 +62,21 @@ class BISPreviewParser:
             pub_year = int(std_match.group(2).strip())
             title = std_match.group(3).strip()
         else:
-            simple_match = re.search(r'((?:IS|SP)\s+[\d\(\)\-\sPart]+)(.*)', header_text, re.IGNORECASE)
+            simple_match = re.search(r'((?:IS(?:/[A-Z0-9/\-]+)?|SP)\s+[\d\(\)\-\sPartA-Z]+)(.*)', header_text, re.IGNORECASE)
             if simple_match:
                 standard_number = simple_match.group(1).strip()
                 title = simple_match.group(2).strip(" :-")
                 pub_year = 0
             else:
-                standard_number = header_text[:30]
-                title = header_text[30:]
+                # Do not arbitrarily chop text if not matching standard format
+                clean_h = header_text.strip()
+                colon_idx = clean_h.find(":")
+                if colon_idx > 0 and colon_idx < 35:
+                    standard_number = clean_h[:colon_idx].strip()
+                    title = clean_h[colon_idx + 1:].strip()
+                else:
+                    standard_number = clean_h
+                    title = clean_h
                 pub_year = 0
 
         # Clean title

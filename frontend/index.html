@@ -227,6 +227,7 @@
                     <button class="sidebar-item" data-view="saved" id="side-saved">
                         <i class="fa-solid fa-bookmark"></i>
                         <span data-i18n="nav_favorites">Saved Results</span>
+                        <span class="sidebar-badge-count" id="sidebar-saved-count" style="display: none;">0</span>
                     </button>
                     <button class="sidebar-item" data-view="alerts" id="side-alerts">
                         <i class="fa-solid fa-bell"></i>
@@ -246,17 +247,11 @@
                 <!-- Sidebar Bottom Graphic: Map of India & Motto -->
                 <div class="sidebar-footer-watermark">
                     <div class="india-map-graphic">
-                        <!-- Clean vector outline map of India in warm sand/orange tone -->
-                        <svg viewBox="0 0 160 180" fill="none" xmlns="http://www.w3.org/2000/svg" class="india-map-svg">
-                            <path d="M72 10C73 14 77 15 79 19C81 23 80 27 82 30C86 31 90 32 94 36C95 39 93 42 96 45C99 47 104 46 107 48C108 52 105 56 104 59C102 63 98 65 97 69C97 73 100 76 103 79C106 82 110 84 114 86C119 88 125 89 130 90C136 91 141 93 144 97C145 101 142 105 141 109C139 113 140 118 138 122C135 125 130 125 126 127C122 129 118 132 114 135C110 138 107 142 104 146C99 152 94 159 88 165C85 169 82 173 78 177C76 177 74 175 73 172C70 166 69 159 66 153C63 146 61 139 58 132C55 126 51 120 48 114C45 108 41 103 37 98C33 93 29 89 26 84C23 80 20 75 18 70C17 65 19 60 21 55C24 50 28 47 32 44C36 41 41 39 46 38C51 37 56 35 60 32C64 29 66 23 68 18C69 14 70 11 72 10Z" 
-                                fill="#d97706" fill-opacity="0.18" stroke="#b45309" stroke-width="1.2" stroke-linejoin="round"/>
-                        </svg>
+                        <img src="/static/india-map.png" alt="Map of India" class="india-map-img">
                     </div>
                     <div class="sidebar-quality-motto">
-                        <div>Quality</div>
-                        <div>Standards</div>
-                        <div>Stronger</div>
-                        <div>India</div>
+                        <div>Quality Standards</div>
+                        <div>Stronger India</div>
                     </div>
                     <div class="sidebar-tiranga-bar">
                         <span class="t-saffron"></span>
@@ -269,16 +264,9 @@
             <!-- Main Viewport Area -->
             <main class="content-viewport">
                 <!-- ==========================================================================
-                     TOP GLOBAL SEARCH & QUICK ACTION STRIP
+                     TOP GLOBAL QUICK ACTION STRIP (Search tab removed)
                      ========================================================================== -->
-                <div class="top-action-search-strip">
-                    <div class="global-search-container">
-                        <i class="fa-solid fa-magnifying-glass search-leading-icon"></i>
-                        <input type="text" id="top-search-input" class="global-search-input" 
-                               placeholder="Search standards, keywords, or paste procurement requirements (Press Enter to Search)..."
-                               value="Stainless steel cable tray with perforated type for electrical wiring in industrial applications">
-                    </div>
-
+                <div class="top-action-search-strip" style="justify-content: flex-end;">
                     <div class="quick-nav-actions">
                         <button class="btn-quick-action" id="btn-top-upload" data-view="upload" title="Upload tender documents">
                             <i class="fa-solid fa-file-arrow-up"></i>
@@ -374,6 +362,10 @@
                             </div>
 
                             <div class="rec-header-actions">
+                                <button class="btn-action-outline" id="btn-header-bookmark-result" title="Bookmark this tender recommendation result">
+                                    <i class="fa-regular fa-bookmark"></i>
+                                    <span id="btn-header-bookmark-text">Bookmark Result</span>
+                                </button>
                                 <button class="btn-action-outline" id="btn-header-download-pdf">
                                     <i class="fa-solid fa-download"></i>
                                     <span>Download Report (PDF)</span>
@@ -1104,18 +1096,94 @@
                     <div class="view-header">
                         <div class="view-header-row">
                             <div>
-                                <h2><i class="fa-solid fa-bookmark"></i> Saved Procurement Results & Tenders</h2>
-                                <p>Bookmarked tender specifications and standard compliance portfolios.</p>
+                                <h2><i class="fa-solid fa-bookmark" style="color: #EA580C; margin-right: 8px;"></i> Saved Standards & Procurement Tenders</h2>
+                                <p>Access your bookmarked Indian Standards, certification portfolios, and saved tender specifications.</p>
                             </div>
-                            <button class="btn-action-navy" id="btn-bookmark-current">
-                                <i class="fa-solid fa-bookmark"></i> Bookmark Current Result
-                            </button>
+                            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                                <button class="btn-action-outline" id="btn-export-saved-portfolio" title="Export bookmarked standards portfolio as summary document">
+                                    <i class="fa-solid fa-file-arrow-down"></i> Export Portfolio
+                                </button>
+                                <button class="btn-action-outline" id="btn-clear-all-saved" title="Clear all saved bookmarks">
+                                    <i class="fa-solid fa-trash-can"></i> Clear All
+                                </button>
+                                <button class="btn-action-navy" id="btn-bookmark-current" data-action="bookmark-result">
+                                    <i class="fa-solid fa-bookmark"></i> Bookmark Current Result
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Summary Metric Stats Cards Strip -->
+                    <div class="saved-stats-grid">
+                        <div class="saved-stat-card">
+                            <div class="saved-stat-icon icon-navy">
+                                <i class="fa-solid fa-layer-group"></i>
+                            </div>
+                            <div class="saved-stat-info">
+                                <span class="saved-stat-label">Bookmarked Standards</span>
+                                <span class="saved-stat-value" id="stat-saved-stds-count">0</span>
+                            </div>
+                        </div>
+                        <div class="saved-stat-card">
+                            <div class="saved-stat-icon icon-orange">
+                                <i class="fa-solid fa-file-invoice"></i>
+                            </div>
+                            <div class="saved-stat-info">
+                                <span class="saved-stat-label">Saved Tender Searches</span>
+                                <span class="saved-stat-value" id="stat-saved-tenders-count">0</span>
+                            </div>
+                        </div>
+                        <div class="saved-stat-card">
+                            <div class="saved-stat-icon icon-green">
+                                <i class="fa-solid fa-shield-halved"></i>
+                            </div>
+                            <div class="saved-stat-info">
+                                <span class="saved-stat-label">Mandatory QCO / CRS Standards</span>
+                                <span class="saved-stat-value" id="stat-saved-mandatory-count">0</span>
+                            </div>
                         </div>
                     </div>
 
                     <div class="card saved-card">
-                        <div class="saved-grid" id="saved-results-grid">
-                            <!-- Populated dynamically -->
+                        <!-- Dual Tabs: Bookmarked Standards vs Saved Tenders -->
+                        <div class="saved-tabs-bar">
+                            <button class="saved-tab-pill active" id="tab-saved-stds">
+                                <i class="fa-solid fa-layer-group"></i> Bookmarked Standards <span class="saved-tab-count-badge" id="count-saved-stds">0</span>
+                            </button>
+                            <button class="saved-tab-pill" id="tab-saved-tenders">
+                                <i class="fa-solid fa-file-invoice"></i> Saved Tender Searches <span class="saved-tab-count-badge" id="count-saved-tenders">0</span>
+                            </button>
+                        </div>
+
+                        <!-- Real-time Filter & Domain Toolbar -->
+                        <div class="saved-filter-bar">
+                            <div class="saved-search-wrapper">
+                                <i class="fa-solid fa-magnifying-glass filter-search-icon"></i>
+                                <input type="text" id="filter-saved-input" class="saved-search-input" placeholder="Search bookmarked standards by standard number, keyword, title, or scope..." />
+                                <button id="btn-clear-saved-filter" class="btn-clear-saved-search hidden" title="Clear filter">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                            <div class="saved-filter-controls">
+                                <select id="filter-saved-domain" class="saved-domain-select" title="Filter by domain">
+                                    <option value="">All Domains</option>
+                                    <option value="Electronics">Electronics & IT</option>
+                                    <option value="Food">Food & Agriculture</option>
+                                    <option value="Chemical">Chemical & Petroleum</option>
+                                    <option value="Mechanical">Mechanical & Materials</option>
+                                    <option value="Civil">Civil Engineering</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Tab 1: Bookmarked Standards Grid -->
+                        <div class="saved-stds-grid" id="saved-standards-grid">
+                            <!-- Populated dynamically with bookmarked standard cards -->
+                        </div>
+
+                        <!-- Tab 2: Saved Tender Results Grid -->
+                        <div class="saved-grid" id="saved-results-grid" style="display: none;">
+                            <!-- Populated dynamically with saved tender runs -->
                         </div>
                     </div>
                 </section>
@@ -1638,6 +1706,6 @@
     <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
     <!-- StandIQ Application Script -->
-    <script src="/static/app.js"></script>
+    <script src="/static/app.js?v=20260925_3"></script>
 </body>
 </html>

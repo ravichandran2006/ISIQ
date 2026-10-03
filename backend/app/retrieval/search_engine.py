@@ -59,44 +59,105 @@ class HybridSearchEngine:
 
         candidates_map: Dict[int, Dict[str, Any]] = {}
 
-        # 2. Exact Title / Key Phrase Match in SQLite (Ultra-fast direct database match)
-        search_phrases = []
-        for phrase in [query.strip(), query_clean]:
-            words = [w for w in re.findall(r'[a-zA-Z0-9]+', phrase.lower()) if len(w) > 2 and w not in ProcurementNLPExtractor.STOP_WORDS]
-            if len(words) >= 2:
-                p2 = " ".join(words[:2])
-                if p2 not in search_phrases:
-                    search_phrases.append(p2)
-                if len(words) >= 3:
-                    p3 = " ".join(words[:3])
-                    if p3 not in search_phrases:
-                        search_phrases.append(p3)
-            # Only match single words if explicitly in technical products list
-            technical_products = [
-                "laptop", "inverter", "transformer", "refrigerator", "purifier",
-                "cement", "extinguisher", "switchgear", "generator", "cable",
-                "steel", "rebar", "wire", "battery", "ups", "luminaire"
-            ]
-            for w in words:
-                if w in technical_products and w not in search_phrases:
-                    search_phrases.append(w)
+        # 2. Exact Title, Phrase, and Concordance Match in SQLite
+        clean_q = re.sub(r'\(.*?\)', '', query.strip())
+        raw_words = re.findall(r'[a-zA-Z0-9]+', clean_q.lower())
+        generic_tokens = {
+            "code", "practice", "specification", "specifications", "standard", "standards",
+            "part", "revision", "first", "second", "third", "fourth", "fifth",
+            "for", "and", "the", "in", "of", "use", "general", "requirements", "method", "methods",
+            "technical", "proposed", "details", "description", "scope", "item", "items", "clause",
+            "make", "model", "type", "latest", "available", "website", "warranty", "period",
+            "must", "service", "pack", "preloaded", "generation", "higher", "better", "name",
+            "procure", "procurement", "purchase", "supply"
+        }
+        content_words = [w for w in raw_words if len(w) > 2 and w not in ProcurementNLPExtractor.STOP_WORDS and w not in generic_tokens]
 
-        for sp in search_phrases[:3]:
-            matching_stds = self.db.query(Standard).filter(
+        # Search candidates by direct phrases or content keywords
+        search_terms = []
+        if domain_filter:
+            domain_kws = ProcurementNLPExtractor.DOMAIN_MAPPINGS.get(domain_filter, [])
+            for dkw in domain_kws:
+                if dkw in clean_q.lower() and dkw not in search_terms:
+                    search_terms.append(dkw)
+
+        if len(content_words) >= 2:
+            search_terms.append(" ".join(content_words[:2]))
+            search_terms.append(" ".join(content_words[-2:]))
+        for cw in content_words:
+            if cw not in search_terms:
+                search_terms.append(cw)
+
+        # Retrieve matching standards for candidate evaluation
+        matched_candidates = []
+        for term in search_terms[:10]:
+            found_stds = self.db.query(Standard).filter(
                 or_(
-                    Standard.title.ilike(f"%{sp}%"),
-                    Standard.scope.ilike(f"%{sp}%"),
-                    Standard.standard_number.ilike(f"%{sp}%")
+                    Standard.title.ilike(f"%{term}%"),
+                    Standard.standard_number.ilike(f"%{term}%"),
+                    Standard.scope.ilike(f"%{term}%")
                 )
-            ).limit(6).all()
-            for std in matching_stds:
-                clean_title = (std.title or "").strip()
-                if len(clean_title) >= 3 and clean_title != ")":
-                    score = 0.75 if sp in clean_title.lower() else 0.65
-                    candidates_map[std.id] = self._serialize_standard(std, base_score=score, match_type="lexical_keyword")
+            ).limit(25).all()
+            for s in found_stds:
+                if s not in matched_candidates:
+                    matched_candidates.append(s)
 
-        # 3. Dense Semantic Vector Search (Primary Hybrid Engine)
-        vector_results = self.vector_engine.search(query_clean, top_k=top_k * 3, min_threshold=0.35)
+        # Guaranteed retrieval for standards within the detected domain
+        if domain_filter:
+            domain_stds = self.db.query(Standard).filter(
+                Standard.domain == domain_filter
+            ).all()
+            for s in domain_stds:
+                std_text = f"{s.standard_number} {s.title} {s.scope or ''}".lower()
+                if any(w in std_text for w in content_words[:12]):
+                    if s not in matched_candidates:
+                        matched_candidates.append(s)
+
+        # Score each matched standard by title token concordance & substring inclusion
+        q_sub_tokens = set(content_words)
+        for std in matched_candidates:
+            clean_title = (std.title or "").strip()
+            if len(clean_title) < 3 or clean_title == ")":
+                continue
+
+            std_raw_words = re.findall(r'[a-zA-Z0-9]+', clean_title.lower())
+            t_sub_tokens = {w for w in std_raw_words if len(w) > 2 and w not in generic_tokens and w not in ProcurementNLPExtractor.STOP_WORDS}
+
+            concordance = 0.0
+            overlap = 0
+            if t_sub_tokens and q_sub_tokens:
+                overlap_set = q_sub_tokens & t_sub_tokens
+                overlap = len(overlap_set)
+                concordance = overlap / len(t_sub_tokens)
+
+            # Direct substring check
+            is_substring = (len(clean_q.strip()) > 8 and clean_q.strip().lower() in clean_title.lower()) or (len(clean_title) > 8 and clean_title.lower() in clean_q.strip().lower())
+
+            # Scope keyword relevance
+            scope_lower = (std.scope or "").lower()
+            scope_matches = [cw for cw in content_words[:8] if cw in scope_lower]
+
+            if is_substring or (concordance >= 0.70 and overlap >= 2):
+                score = 0.96
+                match_type = "exact_title"
+            elif concordance >= 0.40 and overlap >= 2:
+                score = 0.88
+                match_type = "high_concordance_title"
+            elif concordance >= 0.20 or len(scope_matches) >= 2:
+                score = 0.76
+                match_type = "lexical_keyword"
+            elif overlap >= 1 or len(scope_matches) >= 1:
+                score = 0.65
+                match_type = "lexical_keyword"
+            else:
+                score = 0.50
+                match_type = "domain_candidate"
+
+            if std.id not in candidates_map or score > candidates_map[std.id]["search_score"]:
+                candidates_map[std.id] = self._serialize_standard(std, base_score=score, match_type=match_type)
+
+        # 3. Dense Semantic / TF-IDF Vector Search (Primary Hybrid Engine)
+        vector_results = self.vector_engine.search(query_clean, top_k=top_k * 3, min_threshold=0.10)
         for doc_id, sim_score in vector_results:
             if doc_id not in candidates_map:
                 std = self.db.query(Standard).filter(Standard.id == doc_id).first()
@@ -132,6 +193,16 @@ class HybridSearchEngine:
             return []
 
         candidate_list = list(candidates_map.values())
+        from backend.app.recommendation.certification_engine import CertificationRequirementEngine
+        for c in candidate_list:
+            cm = CertificationRequirementEngine.evaluate_standard(
+                standard_number=c.get("standard_number", ""),
+                title=c.get("title", ""),
+                scope=c.get("scope", ""),
+                domain=c.get("domain", "")
+            )
+            c["is_mandatory"] = cm["is_mandatory"]
+            c["certification_scheme"] = cm["certification_scheme"]
 
         # 5. Dense Semantic Reranking with Domain & Lifecycle Calibration
         ranked_results = StandardsReranker.rerank(
@@ -147,13 +218,13 @@ class HybridSearchEngine:
         top_score = ranked_results[0].get("final_score", 0.0)
         has_exact_is = any(c.get("match_type") == "exact_identifier" for c in ranked_results)
 
-        # Gate threshold: 0.45 for general semantic matches; only exact IS identifier can bypass
-        if top_score < 0.45 and not has_exact_is:
+        # Gate threshold: 0.48 for general semantic matches; only exact IS identifier can bypass
+        if top_score < 0.48 and not has_exact_is:
             return []
 
         filtered_ranked = [
             c for c in ranked_results
-            if c.get("final_score", 0.0) >= 0.45 or c.get("match_type") == "exact_identifier"
+            if c.get("final_score", 0.0) >= 0.48 or c.get("match_type") == "exact_identifier"
         ]
         return filtered_ranked[:top_k]
 

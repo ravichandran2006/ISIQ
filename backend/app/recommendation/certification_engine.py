@@ -19,6 +19,7 @@ class CertificationRequirementEngine:
     CRS_PATTERNS = [
         # IS Numbers under CRS
         r"IS\s*13252",  # IT Equipment / Computers / Servers / Laptops / Printers
+        r"IS(?:/IEC)?\s*62368",  # Audio/video, information and communication technology equipment
         r"IS\s*16221",  # Photovoltaic Power Converters / Solar Inverters
         r"IS\s*16169",  # Anti-islanding for Solar Inverters
         r"IS\s*16102",  # Self-ballasted LED lamps

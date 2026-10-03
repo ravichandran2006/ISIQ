@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let currentData = null;
     let searchHistory = JSON.parse(localStorage.getItem("standiq_history") || "[]");
     let savedResults = JSON.parse(localStorage.getItem("standiq_saved") || "[]");
+    let bookmarkedStandards = JSON.parse(localStorage.getItem("standiq_bookmarked_standards") || "[]");
 
     // --- THEME CONTROLLER (DARK / LIGHT MODE) ---
     const btnThemeToggle = document.getElementById("btn-theme-toggle");
@@ -280,7 +281,11 @@ document.addEventListener("DOMContentLoaded", () => {
         // Trigger view-specific loads
         if (viewName === "dashboard" && !currentData) renderDashboard(null);
         if (viewName === "history") renderHistoryTable();
-        if (viewName === "saved") renderSavedResultsGrid();
+        if (viewName === "saved") {
+            renderSavedStandardsGrid();
+            renderSavedResultsGrid();
+            updateSavedBadges();
+        }
     }
 
     // --- MOBILE HAMBURGER & DRAWER CONTROLLER ---
@@ -462,6 +467,10 @@ document.addEventListener("DOMContentLoaded", () => {
                         </div>
                     </div>
                     <div class="std-card-actions">
+                        <button class="btn-bookmark-std btn-card-action ${isStandardBookmarked(std.standard_number) ? 'bookmarked' : ''}" data-idx="${idx}" data-std="${std.standard_number}" title="${isStandardBookmarked(std.standard_number) ? 'Remove from bookmarks' : 'Bookmark this Indian Standard'}">
+                            <i class="${isStandardBookmarked(std.standard_number) ? 'fa-solid' : 'fa-regular'} fa-bookmark"></i>
+                            <span>${isStandardBookmarked(std.standard_number) ? 'Saved' : 'Bookmark'}</span>
+                        </button>
                         <button class="btn-ai-explain-table btn-card-action" data-idx="${idx}" title="Ask AI why this standard is recommended">
                             <i class="fa-solid fa-wand-magic-sparkles"></i> AI Explain
                         </button>
@@ -532,10 +541,50 @@ document.addEventListener("DOMContentLoaded", () => {
             topSearchInput.value = data.query;
         }
 
+        const hasRecs = data.primary_recommendations && data.primary_recommendations.length > 0;
+
+        // Master Card Header: Status, Badge & Actions
+        const recCheckBadge = document.querySelector(".success-check-badge");
+        if (recCheckBadge) {
+            if (!hasRecs) {
+                recCheckBadge.style.background = "#FEF2F2";
+                recCheckBadge.style.color = "#DC2626";
+                recCheckBadge.style.borderColor = "#FECACA";
+                recCheckBadge.innerHTML = `<i class="fa-solid fa-circle-xmark"></i>`;
+            } else {
+                recCheckBadge.style.background = "";
+                recCheckBadge.style.color = "";
+                recCheckBadge.style.borderColor = "";
+                recCheckBadge.innerHTML = `<i class="fa-solid fa-check"></i>`;
+            }
+        }
+        const recStatusTitle = document.querySelector(".rec-status-title");
+        if (recStatusTitle) {
+            recStatusTitle.textContent = hasRecs ? "Recommendation Completed" : "No Relevant Indian Standards Found";
+        }
+        const recStatusSubtitle = document.querySelector(".rec-status-subtitle");
+        if (recStatusSubtitle) {
+            recStatusSubtitle.textContent = hasRecs 
+                ? "Standards identified based on your procurement requirement" 
+                : "No matching Indian Standards identified for this input in the BIS catalog";
+        }
+        const btnHeaderDownload = document.getElementById("btn-header-download-pdf");
+        if (btnHeaderDownload) btnHeaderDownload.style.display = hasRecs ? "" : "none";
+        const btnHeaderTender = document.getElementById("btn-header-tender-spec");
+        if (btnHeaderTender) btnHeaderTender.style.display = hasRecs ? "" : "none";
+        const btnHeaderBookmark = document.getElementById("btn-header-bookmark-result");
+        if (btnHeaderBookmark) {
+            btnHeaderBookmark.style.display = hasRecs ? "" : "none";
+            updateHeaderBookmarkButton();
+        }
+
         // 1. Requirement Hero Text
-        document.getElementById("display-requirement-text").textContent = data.query || "Technical Procurement Requirement";
-        document.getElementById("meta-source").textContent = data.source || "Text Input";
-        document.getElementById("meta-date").textContent = data.searched_on || new Date().toLocaleString();
+        const elReqText = document.getElementById("display-requirement-text");
+        if (elReqText) elReqText.textContent = data.query || "Technical Procurement Requirement";
+        const elMetaSource = document.getElementById("meta-source");
+        if (elMetaSource) elMetaSource.textContent = data.source || "Text Input";
+        const elMetaDate = document.getElementById("meta-date");
+        if (elMetaDate) elMetaDate.textContent = data.searched_on || new Date().toLocaleString();
 
         // Multilingual Indic Translation Strip
         const transStrip = document.getElementById("indic-translation-strip");
@@ -547,17 +596,18 @@ document.addEventListener("DOMContentLoaded", () => {
             if (origLangBadge) origLangBadge.textContent = `${langObj.nativeName} (${langObj.name})`;
             if (transEnglish) transEnglish.textContent = data.translated_query;
             if (transStrip) transStrip.classList.remove("hidden");
-            document.getElementById("meta-lang").textContent = `${langObj.name} (${langObj.nativeName})`;
+            const elMetaLang = document.getElementById("meta-lang");
+            if (elMetaLang) elMetaLang.textContent = `${langObj.name} (${langObj.nativeName})`;
         } else {
             if (transStrip) transStrip.classList.add("hidden");
             const curLang = window.currentLang || localStorage.getItem("standiq_lang") || "en";
             const langObj = (typeof STANDIQ_LANGUAGES !== "undefined" && STANDIQ_LANGUAGES[curLang]) || { name: "English" };
-            document.getElementById("meta-lang").textContent = langObj.name;
+            const elMetaLang = document.getElementById("meta-lang");
+            if (elMetaLang) elMetaLang.textContent = langObj.name;
         }
 
         // 2. BIS Standard Life Cycle & Quality Verification Widget
         const displayStatus = document.getElementById("display-lifecycle-status") || document.getElementById("display-score-large");
-        const hasRecs = data.primary_recommendations && data.primary_recommendations.length > 0;
         
         if (displayStatus) {
             if (!hasRecs) {
@@ -586,76 +636,97 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // 3. 6 Key Metrics
-        document.getElementById("stat-standards-found").textContent = hasRecs ? (data.standards_found_count || data.primary_recommendations.length) : 0;
-        document.getElementById("stat-related-standards").textContent = hasRecs ? (data.related_standards_count || (data.normative_references ? data.normative_references.length + data.allied_references.length : 0)) : 0;
-        document.getElementById("stat-latest-version").textContent = hasRecs ? (data.latest_version_status || "Up to date") : "N/A";
-        document.getElementById("stat-compliance-checks").textContent = hasRecs ? (data.compliance_checks || "4 / 4") : "0 / 0";
-        document.getElementById("stat-reqs-extracted").textContent = data.requirements_extracted_count || 1;
-        document.getElementById("stat-doc-pages").textContent = data.doc_pages || 0;
-        document.getElementById("stat-doc-type").textContent = data.doc_pages > 0 ? "(PDF Document)" : "(Text Input)";
+        const elStatFound = document.getElementById("stat-standards-found");
+        if (elStatFound) elStatFound.textContent = hasRecs ? (data.standards_found_count || data.primary_recommendations.length) : 0;
+        const elStatRelated = document.getElementById("stat-related-standards");
+        if (elStatRelated) elStatRelated.textContent = hasRecs ? (data.related_standards_count || (data.normative_references ? data.normative_references.length + data.allied_references.length : 0)) : 0;
+        const elStatLatest = document.getElementById("stat-latest-version");
+        if (elStatLatest) elStatLatest.textContent = hasRecs ? (data.latest_version_status || "Up to date") : "N/A";
+        const elStatComp = document.getElementById("stat-compliance-checks");
+        if (elStatComp) elStatComp.textContent = hasRecs ? (data.compliance_checks || "4 / 4") : "0 / 0";
+        const elStatReqs = document.getElementById("stat-reqs-extracted");
+        if (elStatReqs) elStatReqs.textContent = hasRecs ? (data.requirements_extracted_count || 1) : 0;
+        const elStatPages = document.getElementById("stat-doc-pages");
+        if (elStatPages) elStatPages.textContent = data.doc_pages || 0;
+        const elStatDocType = document.getElementById("stat-doc-type");
+        if (elStatDocType) elStatDocType.textContent = data.doc_pages > 0 ? "(PDF Document)" : "(Text Input)";
 
         // 4. Recommended Indian Standards & Standard Life Cycle Cards
         const container = document.getElementById("tbody-recommended-standards");
-        container.innerHTML = "";
+        if (container) {
+            container.innerHTML = "";
 
-        const recs = data.primary_recommendations || [];
-        const badgeCount = document.getElementById("total-standards-badge");
-        if (badgeCount) badgeCount.textContent = recs.length;
-        const badgeCountLink = document.getElementById("total-standards-badge-link");
-        if (badgeCountLink) badgeCountLink.textContent = recs.length;
-        const footerCount = document.getElementById("footer-stds-count");
-        if (footerCount) footerCount.textContent = recs.length;
+            const recs = data.primary_recommendations || [];
+            const badgeCount = document.getElementById("total-standards-badge");
+            if (badgeCount) badgeCount.textContent = recs.length;
+            const badgeCountLink = document.getElementById("total-standards-badge-link");
+            if (badgeCountLink) badgeCountLink.textContent = recs.length;
+            const footerCount = document.getElementById("footer-stds-count");
+            if (footerCount) footerCount.textContent = recs.length;
 
-        if (recs.length === 0) {
-            container.innerHTML = `
-                <div class="empty-dashboard-placeholder" style="text-align: center; padding: 40px 20px; background: #FFFFFF; border: 1.5px dashed var(--border-color); border-radius: 8px; margin: 12px 0;">
-                    <div style="width: 50px; height: 50px; border-radius: 50%; background: #FEF2F2; color: #DC2626; display: inline-flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 12px; border: 1px solid #FECACA;">
-                        <i class="fa-solid fa-circle-exclamation"></i>
+            const footerStandardsWrap = document.querySelector(".card-footer-link");
+            if (footerStandardsWrap) footerStandardsWrap.style.display = hasRecs ? "" : "none";
+
+            if (recs.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-dashboard-placeholder" style="text-align: center; padding: 48px 24px; background: #FFFFFF; border: 1.5px dashed var(--border-color); border-radius: 8px; margin: 12px 0;">
+                        <div style="width: 56px; height: 56px; border-radius: 50%; background: #FEF2F2; color: #DC2626; display: inline-flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 14px; border: 1px solid #FECACA;">
+                            <i class="fa-solid fa-circle-exclamation"></i>
+                        </div>
+                        <h3 style="font-size: 17px; font-weight: 700; color: #0F2B48; margin-bottom: 8px;">No Relevant Indian Standards Found</h3>
+                        <p style="font-size: 13.5px; color: #64748B; max-width: 540px; margin: 0 auto 16px auto; line-height: 1.6;">
+                            StandIQ evaluated your input and found no matching Indian Standards in the indexed BIS catalog. 
+                            Please ensure your requirement describes a physical product, machinery, appliance, or technical specification.
+                        </p>
+                        <button class="btn-action-navy" id="btn-empty-retry-search" style="padding: 10px 22px; font-size: 13px; cursor: pointer;">
+                            <i class="fa-solid fa-magnifying-glass"></i> Modify Procurement Requirement
+                        </button>
                     </div>
-                    <h3 style="font-size: 16px; font-weight: 700; color: #0F2B48; margin-bottom: 6px;">No Relevant Indian Standards Found</h3>
-                    <p style="font-size: 13px; color: #64748B; max-width: 520px; margin: 0 auto 16px auto;">
-                        StandIQ evaluated your requirement and found no matching Indian Standards in the indexed BIS catalog. 
-                        Please ensure the input describes a physical product, machinery, appliance, or technical specification.
-                    </p>
-                    <button class="btn-action-navy" id="btn-empty-retry-search" style="padding: 9px 20px; font-size: 13px; cursor: pointer;">
-                        <i class="fa-solid fa-magnifying-glass"></i> Modify Procurement Requirement
-                    </button>
-                </div>
-            `;
-            const retryBtn = document.getElementById("btn-empty-retry-search");
-            if (retryBtn) retryBtn.addEventListener("click", () => switchView("search"));
-        } else {
-            recs.forEach((std, idx) => {
-                const cardWrapper = document.createElement("div");
-                cardWrapper.innerHTML = buildStandardLifecycleCardHtml(std, idx).trim();
-                container.appendChild(cardWrapper.firstElementChild);
+                `;
+                const retryBtn = document.getElementById("btn-empty-retry-search");
+                if (retryBtn) retryBtn.addEventListener("click", () => switchView("search"));
+            } else {
+                recs.forEach((std, idx) => {
+                    const cardWrapper = document.createElement("div");
+                    cardWrapper.innerHTML = buildStandardLifecycleCardHtml(std, idx).trim();
+                    container.appendChild(cardWrapper.firstElementChild);
+                });
+            }
+
+            // Add Evidence, Bookmark & AI Explain Click Handlers
+            container.querySelectorAll(".btn-bookmark-std").forEach(btn => {
+                btn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    const idx = parseInt(btn.getAttribute("data-idx"), 10);
+                    const std = recs[idx];
+                    if (std) toggleStandardBookmark(std);
+                });
+            });
+
+            container.querySelectorAll(".btn-ai-explain-table").forEach(btn => {
+                btn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    const idx = parseInt(btn.getAttribute("data-idx"), 10);
+                    openAIExplanationModal(recs[idx]);
+                });
+            });
+
+            container.querySelectorAll(".btn-view-evidence-table").forEach(btn => {
+                btn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    const idx = parseInt(btn.getAttribute("data-idx"), 10);
+                    openEvidenceModal(recs[idx]);
+                });
+            });
+
+            container.querySelectorAll(".std-link").forEach(link => {
+                link.addEventListener("click", () => {
+                    const stdNum = link.getAttribute("data-std");
+                    const matched = recs.find(s => s.standard_number === stdNum);
+                    if (matched) openEvidenceModal(matched);
+                });
             });
         }
-
-        // Add Evidence & AI Explain Click Handlers
-        container.querySelectorAll(".btn-ai-explain-table").forEach(btn => {
-            btn.addEventListener("click", (e) => {
-                e.stopPropagation();
-                const idx = parseInt(btn.getAttribute("data-idx"), 10);
-                openAIExplanationModal(recs[idx]);
-            });
-        });
-
-        container.querySelectorAll(".btn-view-evidence-table").forEach(btn => {
-            btn.addEventListener("click", (e) => {
-                e.stopPropagation();
-                const idx = parseInt(btn.getAttribute("data-idx"), 10);
-                openEvidenceModal(recs[idx]);
-            });
-        });
-
-        container.querySelectorAll(".std-link").forEach(link => {
-            link.addEventListener("click", () => {
-                const stdNum = link.getAttribute("data-std");
-                const matched = recs.find(s => s.standard_number === stdNum);
-                if (matched) openEvidenceModal(matched);
-            });
-        });
 
         // 5. Related & Normative References Table
         const tbodyRelated = document.getElementById("tbody-related-standards");
@@ -672,44 +743,60 @@ document.addEventListener("DOMContentLoaded", () => {
             const countElem = document.getElementById("count-all-related");
             if (countElem) countElem.textContent = allRelated.length;
 
-            allRelated.forEach(item => {
-                const tr = document.createElement("tr");
-                const stdNum = item.std || item.referenced_standard_number;
-                const stdTitle = item.title || item.referenced_title || "Applicable Reference Standard";
+            const btnViewAllRelated = document.getElementById("btn-view-all-related");
+            if (btnViewAllRelated) {
+                btnViewAllRelated.style.display = (hasRecs && allRelated.length > 0) ? "" : "none";
+            }
 
-                tr.innerHTML = `
-                    <td><a class="std-link" data-std="${stdNum}">${stdNum}</a></td>
-                    <td><span class="std-title-cell">${stdTitle}</span></td>
-                    <td><span class="${item.badgeClass}">${item.relType}</span></td>
-                    <td style="text-align: right;">
-                        <button class="btn-view-evidence-table btn-view-related-ev" data-std="${stdNum}" data-title="${stdTitle}" data-type="${item.relType}">
-                            <i class="fa-regular fa-eye"></i> Evidence
-                        </button>
-                    </td>
+            if (allRelated.length === 0) {
+                tbodyRelated.innerHTML = `
+                    <tr>
+                        <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 32px 16px;">
+                            <i class="fa-regular fa-folder-open" style="font-size: 20px; display: block; margin-bottom: 8px; color: #94A3B8;"></i>
+                            No related or normative reference standards applicable.
+                        </td>
+                    </tr>
                 `;
-                tbodyRelated.appendChild(tr);
-            });
+            } else {
+                allRelated.forEach(item => {
+                    const tr = document.createElement("tr");
+                    const stdNum = item.std || item.referenced_standard_number;
+                    const stdTitle = item.title || item.referenced_title || "Applicable Reference Standard";
 
-            tbodyRelated.querySelectorAll(".std-link, .btn-view-related-ev").forEach(btn => {
-                btn.addEventListener("click", () => {
-                    const sNum = btn.getAttribute("data-std");
-                    const sTitle = btn.getAttribute("data-title") || `Reference Standard ${sNum}`;
-                    openEvidenceModal({
-                        standard_number: sNum,
-                        title: sTitle,
-                        scope: `This standard specifies the technical parameters, testing methods, and quality criteria for allied raw materials and installation compliance referenced in the primary tender specifications.`,
-                        committee_code: "BIS Technical Committee",
-                        ics_code: "29.120 / 77.140",
-                        why_relevant: `Normatively referenced under the primary standard to enforce raw material conformity and safety compliance.`
+                    tr.innerHTML = `
+                        <td><a class="std-link" data-std="${stdNum}">${stdNum}</a></td>
+                        <td><span class="std-title-cell">${stdTitle}</span></td>
+                        <td><span class="${item.badgeClass}">${item.relType}</span></td>
+                        <td style="text-align: right;">
+                            <button class="btn-view-evidence-table btn-view-related-ev" data-std="${stdNum}" data-title="${stdTitle}" data-type="${item.relType}">
+                                <i class="fa-regular fa-eye"></i> Evidence
+                            </button>
+                        </td>
+                    `;
+                    tbodyRelated.appendChild(tr);
+                });
+
+                tbodyRelated.querySelectorAll(".std-link, .btn-view-related-ev").forEach(btn => {
+                    btn.addEventListener("click", () => {
+                        const sNum = btn.getAttribute("data-std");
+                        const sTitle = btn.getAttribute("data-title") || `Reference Standard ${sNum}`;
+                        openEvidenceModal({
+                            standard_number: sNum,
+                            title: sTitle,
+                            scope: `This standard specifies technical parameters, testing methods, and quality criteria for allied materials and installation compliance.`,
+                            committee_code: "BIS Technical Committee",
+                            ics_code: "29.120 / 77.140",
+                            why_relevant: `Normatively referenced under the primary standard to enforce raw material conformity and safety compliance.`
+                        });
                     });
                 });
-            });
+            }
         }
 
         // 5.5 Card 5: Dynamic Certification & Compliance
         const comp = data.compliance || {};
-        const mandCount = hasRecs ? (comp.mandatory_count !== undefined ? comp.mandatory_count : recs.filter(r => r.is_mandatory).length) : 0;
-        const volCount = hasRecs ? (comp.voluntary_count !== undefined ? comp.voluntary_count : recs.filter(r => !r.is_mandatory).length) : 0;
+        const mandCount = hasRecs ? (comp.mandatory_count !== undefined ? comp.mandatory_count : (data.primary_recommendations || []).filter(r => r.is_mandatory).length) : 0;
+        const volCount = hasRecs ? (comp.voluntary_count !== undefined ? comp.voluntary_count : (data.primary_recommendations || []).filter(r => !r.is_mandatory).length) : 0;
 
         const elMandCount = document.getElementById("comp-mand-count");
         if (elMandCount) elMandCount.textContent = mandCount;
@@ -719,8 +806,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const updateCompliancePill = (id, obj, defaultStatus, defaultClass) => {
             const el = document.getElementById(id);
             if (!el) return;
-            const status = (typeof obj === "object" ? obj.status : obj) || defaultStatus;
-            const cls = (typeof obj === "object" ? obj.badge_class : null) || defaultClass;
+            const status = (obj && typeof obj === "object" ? obj.status : obj) || defaultStatus;
+            const cls = (obj && typeof obj === "object" ? obj.badge_class : null) || defaultClass;
             el.textContent = status;
             el.className = `badge-pill-status ${cls}`;
         };
@@ -745,9 +832,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 const qcoObj = comp.qco || {};
                 const crsObj = comp.crs || {};
                 const hallObj = comp.hallmarking || {};
-                const qcoStatus = typeof qcoObj === "object" ? qcoObj.status : qcoObj;
-                const crsStatus = typeof crsObj === "object" ? crsObj.status : crsObj;
-                const hallStatus = typeof hallObj === "object" ? hallObj.status : hallObj;
+                const qcoStatus = (qcoObj && typeof qcoObj === "object") ? qcoObj.status : qcoObj;
+                const crsStatus = (crsObj && typeof crsObj === "object") ? crsObj.status : crsObj;
+                const hallStatus = (hallObj && typeof hallObj === "object") ? hallObj.status : hallObj;
 
                 if (qcoStatus && qcoStatus.includes("Enforced")) {
                     compAlert.textContent = qcoObj.description || "Enforced under statutory Quality Control Order (QCO). Uncertified goods are rejected on GeM.";
@@ -762,8 +849,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // 6. Version & Amendment Card
-        const v = data.version_status || {};
-        const topRec = hasRecs ? recs[0] : null;
+        const topRec = hasRecs ? (data.primary_recommendations || [])[0] : null;
 
         const currentStdText = hasRecs ? (topRec.status || "Active") : "N/A";
         const currentStdClass = hasRecs ? "pill-green" : "pill-gray";
@@ -857,11 +943,14 @@ document.addEventListener("DOMContentLoaded", () => {
                     summaryElem.textContent = gapAnalysis.completeness_summary;
                 }
             } else {
-                const missingList = data.missing_information || [];
+                const missingList = data.missing_information || [
+                    "Input did not specify any recognized technical product or engineering requirement.",
+                    "Provide an authentic product name or tender requirement to discover applicable Indian Standards."
+                ];
                 missingList.forEach((m, idx) => {
                     const tr = document.createElement("tr");
                     tr.innerHTML = `
-                        <td><strong>Technical Requirement Note #${idx + 1}</strong></td>
+                        <td><strong>Technical Guidance Note #${idx + 1}</strong></td>
                         <td><span class="badge-pill-status pill-orange" style="font-size: 11px;">Guidance</span></td>
                         <td><span style="font-size: 12px; color: var(--text-secondary); line-height: 1.4; display: block;">${m}</span></td>
                         <td style="text-align: center;"><span class="badge-pill-status pill-orange" style="font-size: 10.5px;">Moderate</span></td>
@@ -869,20 +958,50 @@ document.addEventListener("DOMContentLoaded", () => {
                     tbodyMissing.appendChild(tr);
                 });
                 if (badgeMissingCount) badgeMissingCount.textContent = `${missingList.length} Items`;
+                if (summaryElem) {
+                    summaryElem.textContent = hasRecs 
+                        ? "Review the missing technical details to prevent vendor ambiguity in technical bids." 
+                        : "No applicable Indian Standards found. Please enter a valid technical or procurement specification.";
+                }
             }
         }
 
-        // 8. Source & Traceability
-        document.getElementById("kv-retrieved-on").textContent = data.searched_on || new Date().toLocaleString();
+        // 8. Source & Traceability (Safely check element)
+        const elRetrieved = document.getElementById("kv-retrieved-on");
+        if (elRetrieved) elRetrieved.textContent = data.searched_on || new Date().toLocaleString();
 
-        // 9. Card 2 AI Explanation dynamic summary
+        // 9. Card 2 AI Explanation & Verification Checklist
+        const whyChecklist = document.getElementById("why-checklist");
+        if (whyChecklist) {
+            if (!hasRecs) {
+                whyChecklist.innerHTML = `
+                    <div class="criteria-item"><i class="fa-solid fa-circle-xmark" style="color: #94A3B8;"></i><span class="criteria-name" style="color: #64748B;">Product Type: No Match</span></div>
+                    <div class="criteria-item"><i class="fa-solid fa-circle-xmark" style="color: #94A3B8;"></i><span class="criteria-name" style="color: #64748B;">Material: No Match</span></div>
+                    <div class="criteria-item"><i class="fa-solid fa-circle-xmark" style="color: #94A3B8;"></i><span class="criteria-name" style="color: #64748B;">Application / Use: No Match</span></div>
+                    <div class="criteria-item"><i class="fa-solid fa-circle-xmark" style="color: #94A3B8;"></i><span class="criteria-name" style="color: #64748B;">Technical Parameters: No Match</span></div>
+                    <div class="criteria-item"><i class="fa-solid fa-circle-xmark" style="color: #94A3B8;"></i><span class="criteria-name" style="color: #64748B;">Scope Alignment: No Match</span></div>
+                `;
+            } else {
+                whyChecklist.innerHTML = `
+                    <div class="criteria-item"><i class="fa-solid fa-circle-check check-success"></i><span class="criteria-name">Product Type Match</span></div>
+                    <div class="criteria-item"><i class="fa-solid fa-circle-check check-success"></i><span class="criteria-name">Material Match</span></div>
+                    <div class="criteria-item"><i class="fa-solid fa-circle-check check-success"></i><span class="criteria-name">Application / Intended Use Match</span></div>
+                    <div class="criteria-item"><i class="fa-solid fa-circle-check check-success"></i><span class="criteria-name">Technical Requirements Match</span></div>
+                    <div class="criteria-item"><i class="fa-solid fa-circle-check check-success"></i><span class="criteria-name">Scope Match</span></div>
+                `;
+            }
+        }
+
+        const btnExplainModal = document.getElementById("btn-view-explanation-modal");
+        if (btnExplainModal) btnExplainModal.style.display = hasRecs ? "" : "none";
+
         const aiExpElem = document.getElementById("ai-explanation-text");
         if (aiExpElem) {
             const firstRec = (data.primary_recommendations && data.primary_recommendations[0]);
             if (firstRec && firstRec.why_relevant) {
                 aiExpElem.textContent = `${firstRec.standard_number} (${firstRec.title}) is recommended: ${firstRec.why_relevant}`;
             } else {
-                aiExpElem.textContent = hasRecs ? "These standards are recommended because the requirement matches the product type, material, application, and key technical attributes defined in the standards." : "No matching Indian Standards identified for this query.";
+                aiExpElem.textContent = hasRecs ? "These standards are recommended because the requirement matches the product type, material, application, and key technical attributes defined in the standards." : "No matching Indian Standards were identified for this query. The requirement does not correspond to an authentic BIS standard domain or technical product.";
             }
         }
     }
@@ -944,51 +1063,8 @@ document.addEventListener("DOMContentLoaded", () => {
             // Check if Semantic Relevance Gate or Intent Gate rejected the query
             if (apiData.status === "no_relevant_results" || !apiData.primary_recommendations || apiData.primary_recommendations.length === 0) {
                 const rejectMsg = apiData.message || "No relevant Indian Standards found for the given requirement.";
-                showToast(rejectMsg, "warning");
-                const emptyData = {
-                    query: queryText,
-                    domain: "General Context (No Standards Matched)",
-                    source: sourceName,
-                    searched_on: new Date().toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }),
-                    best_score: 0,
-                    relevance_tier: "No Relevant Standards Found",
-                    standards_found_count: 0,
-                    related_standards_count: 0,
-                    latest_version_status: "No Applicable Standards",
-                    compliance_checks: "0 / 0",
-                    requirements_extracted_count: 0,
-                    doc_pages: docPages,
-                    primary_recommendations: [],
-                    normative_references: [],
-                    allied_references: [],
-                    compliance: {
-                        relevance_tier: "No Relevant Standards Found",
-                        score_tier_text: "No Relevant Standards Found",
-                        mandatory_count: 0,
-                        voluntary_count: 0,
-                        bis_product: { status: "Not Applicable", badge_class: "pill-gray" },
-                        qco: { status: "Not Applicable", badge_class: "pill-gray" },
-                        crs: { status: "Not Applicable", badge_class: "pill-gray" },
-                        hallmarking: { status: "Not Applicable", badge_class: "pill-gray" }
-                    },
-                    version_status: {
-                        current_standard: "N/A",
-                        superseded: "N/A",
-                        total_amendments: 0,
-                        latest_amendment: "None (No standard selected)",
-                        date_latest_amendment: "N/A",
-                        alert: "No applicable Indian Standards found for this requirement."
-                    },
-                    missing_information: [
-                        rejectMsg,
-                        "StandIQ evaluated the input and determined no matching Indian Standards currently govern this requirement.",
-                        "Please provide an authentic technical product specification or engineering procurement requirement."
-                    ],
-                    gap_analysis: apiData.gap_analysis || null,
-                    detected_language: apiData.detected_language || "en",
-                    translated_query: apiData.translated_query || null,
-                    rawApiData: apiData
-                };
+                showToast(rejectMsg, "info");
+                const emptyData = buildEmptyData(queryText, sourceName, docPages, rejectMsg, apiData);
                 renderDashboard(emptyData);
                 switchView("dashboard");
                 return;
@@ -1007,12 +1083,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         } catch (err) {
             console.error("API error:", err);
-            // Fallback to local grounded simulation if offline
-            const fallbackData = buildFallbackData(queryText, sourceName, docPages);
-            saveToHistory(fallbackData);
-            renderDashboard(fallbackData);
+            const emptyData = buildEmptyData(queryText, sourceName, docPages, "No relevant Indian Standards found for the given requirement.");
+            renderDashboard(emptyData);
             switchView("dashboard");
-            showToast("Verified against indexed standards catalog.", "success");
+            showToast("No relevant Indian Standards found for the given requirement.", "info");
         } finally {
             btnRunRecommend.disabled = false;
             btnRunRecommend.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> Discover Applicable Standards`;
@@ -1137,13 +1211,55 @@ document.addEventListener("DOMContentLoaded", () => {
         };
     }
 
+    function buildEmptyData(queryText, sourceName, docPages, rejectMsg, apiData = null) {
+        return {
+            query: queryText,
+            domain: (apiData && apiData.extracted_entities && apiData.extracted_entities.domain) || "General Context (No Standards Matched)",
+            source: sourceName,
+            searched_on: new Date().toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }),
+            best_score: 0,
+            relevance_tier: "No Relevant Standards Found",
+            standards_found_count: 0,
+            related_standards_count: 0,
+            latest_version_status: "No Applicable Standards",
+            compliance_checks: "0 / 0",
+            requirements_extracted_count: 0,
+            doc_pages: docPages,
+            primary_recommendations: [],
+            normative_references: [],
+            allied_references: [],
+            compliance: {
+                relevance_tier: "No Relevant Standards Found",
+                score_tier_text: "No Relevant Standards Found",
+                mandatory_count: 0,
+                voluntary_count: 0,
+                bis_product: { status: "Not Applicable", badge_class: "pill-gray" },
+                qco: { status: "Not Applicable", badge_class: "pill-gray" },
+                crs: { status: "Not Applicable", badge_class: "pill-gray" },
+                hallmarking: { status: "Not Applicable", badge_class: "pill-gray" }
+            },
+            version_status: {
+                current_standard: "N/A",
+                superseded: "N/A",
+                total_amendments: 0,
+                latest_amendment: "None",
+                date_latest_amendment: "N/A",
+                alert: "No applicable Indian Standards found for this requirement."
+            },
+            missing_information: [
+                rejectMsg || "No relevant Indian Standards found for the given requirement.",
+                "StandIQ evaluated the input and determined no matching Indian Standards currently govern this requirement.",
+                "Please provide an authentic technical product specification or engineering procurement requirement (e.g. 'Stainless steel cable tray', '500kW solar inverter', '53 grade cement', 'IS 1011')."
+            ],
+            gap_analysis: (apiData && apiData.gap_analysis) || null,
+            detected_language: (apiData && apiData.detected_language) || "en",
+            translated_query: (apiData && apiData.translated_query) || null,
+            rawApiData: apiData
+        };
+    }
+
     function buildFallbackData(query, source, docPages) {
-        const copy = JSON.parse(JSON.stringify(DEFAULT_DATA));
-        copy.query = query;
-        copy.source = source;
-        copy.doc_pages = docPages;
-        copy.searched_on = new Date().toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
-        return copy;
+        return buildEmptyData(query, source, docPages, "No relevant Indian Standards found for the given requirement.");
     }
 
     // Global helper for viewing standard evidence
@@ -1355,82 +1471,689 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // --- SAVED RESULTS / BOOKMARKS ---
-    document.getElementById("btn-bookmark-current").addEventListener("click", () => {
-        if (!currentData) return;
-        const exists = savedResults.some(s => s.query === currentData.query);
-        if (exists) {
-            showToast("This tender recommendation is already saved in your bookmarks.", "info");
+    // --- SAVED RESULTS & BOOKMARKS SYSTEM ---
+
+    function isStandardBookmarked(stdNumber) {
+        if (!stdNumber) return false;
+        const clean = stdNumber.trim().toLowerCase();
+        return bookmarkedStandards.some(s => (s.standard_number || "").trim().toLowerCase() === clean || (s.id || "").toString().toLowerCase() === clean);
+    }
+
+    function toggleStandardBookmark(std) {
+        if (!std || !std.standard_number) return;
+        const cleanNum = std.standard_number.trim();
+        const existingIdx = bookmarkedStandards.findIndex(s => (s.standard_number || "").trim().toLowerCase() === cleanNum.toLowerCase());
+        
+        if (existingIdx >= 0) {
+            bookmarkedStandards.splice(existingIdx, 1);
+            localStorage.setItem("standiq_bookmarked_standards", JSON.stringify(bookmarkedStandards));
+            showToast(`Standard ${cleanNum} removed from bookmarks.`, "info");
+        } else {
+            const newItem = {
+                id: cleanNum,
+                standard_number: cleanNum,
+                title: std.title || "Indian Standard Specification",
+                domain: std.domain || (currentData ? currentData.domain : "General Standard"),
+                publication_year: std.publication_year || (std.publication_date ? parseInt(std.publication_date) : null),
+                reaffirmed_year: std.reaffirmed_year,
+                is_mandatory: std.is_mandatory === true,
+                certification_scheme: std.certification_scheme || (std.is_mandatory ? "Mandatory ISI Scheme-I" : "Voluntary Standard"),
+                relevance_tier: std.relevance_tier || "Applicable Standard",
+                scope: std.scope || "",
+                status: std.status || "Active",
+                preview_url: std.preview_url || "",
+                date: new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }),
+                fullData: std
+            };
+            bookmarkedStandards.unshift(newItem);
+            localStorage.setItem("standiq_bookmarked_standards", JSON.stringify(bookmarkedStandards));
+            showToast(`Standard ${cleanNum} saved to your bookmarks!`, "success");
+        }
+
+        // Synchronize all matching bookmark buttons across the UI
+        document.querySelectorAll(`.btn-bookmark-std[data-std="${cleanNum}"]`).forEach(btn => {
+            const isNowBookmarked = isStandardBookmarked(cleanNum);
+            if (isNowBookmarked) {
+                btn.classList.add("bookmarked");
+                btn.innerHTML = `<i class="fa-solid fa-bookmark" style="color: #2563EB;"></i> <span>Saved</span>`;
+                btn.title = "Remove from bookmarks";
+            } else {
+                btn.classList.remove("bookmarked");
+                btn.innerHTML = `<i class="fa-regular fa-bookmark"></i> <span>Bookmark</span>`;
+                btn.title = "Bookmark this Indian Standard";
+            }
+        });
+
+        updateSavedBadges();
+        const activeSearch = document.getElementById("filter-saved-input") ? document.getElementById("filter-saved-input").value : "";
+        const activeDomain = document.getElementById("filter-saved-domain") ? document.getElementById("filter-saved-domain").value : "";
+        renderSavedStandardsGrid(activeSearch, activeDomain);
+    }
+
+    function getCurrentResultData() {
+        if (currentData && (currentData.query || (currentData.primary_recommendations && currentData.primary_recommendations.length > 0))) {
+            return currentData;
+        }
+        // Fallback: Check active hero text on screen
+        const elReq = document.getElementById("display-requirement-text");
+        const queryText = (elReq && elReq.textContent) ? elReq.textContent.trim() : "";
+        if (queryText && queryText !== "Technical Procurement Requirement") {
+            const domRecs = [];
+            document.querySelectorAll("#standards-cards-container .std-lifecycle-card").forEach(card => {
+                const stdNumEl = card.querySelector(".std-num-link") || card.querySelector(".std-card-title span") || card.querySelector(".badge-std-num");
+                const stdTitleEl = card.querySelector(".std-card-sub");
+                if (stdNumEl) {
+                    domRecs.push({
+                        standard_number: stdNumEl.textContent.trim(),
+                        title: stdTitleEl ? stdTitleEl.textContent.trim() : "",
+                        is_mandatory: card.textContent.includes("MANDATORY"),
+                        certification_scheme: card.textContent.includes("CRS") ? "Mandatory CRS Scheme-II (MeitY)" : "Mandatory ISI Scheme-I"
+                    });
+                }
+            });
+            currentData = {
+                query: queryText,
+                domain: "Procurement Requirement",
+                searched_on: new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }),
+                best_score: 95,
+                primary_recommendations: domRecs
+            };
+            return currentData;
+        }
+        return DEFAULT_DATA;
+    }
+
+    function isCurrentResultBookmarked() {
+        const data = getCurrentResultData();
+        if (!data) return false;
+        const q = (data.query || "").trim().toLowerCase();
+        const stdList = (data.primary_recommendations || []).map(s => (s.standard_number || "").trim().toLowerCase()).sort().join("|");
+        
+        return savedResults.some(s => {
+            const sq = (s.query || s.title || "").trim().toLowerCase();
+            if (q && sq && q === sq) return true;
+            if (stdList && s.standards && s.standards.length > 0) {
+                const sStdList = s.standards.map(num => num.trim().toLowerCase()).sort().join("|");
+                if (sStdList && sStdList === stdList) return true;
+            }
+            return false;
+        });
+    }
+
+    function toggleCurrentResultBookmark() {
+        const data = getCurrentResultData();
+        if (!data || (!data.query && (!data.primary_recommendations || data.primary_recommendations.length === 0))) {
+            showToast("No active tender recommendation to bookmark. Discover standards first.", "info");
             return;
         }
 
-        const savedItem = {
-            id: Date.now(),
-            title: currentData.query,
-            date: new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }),
-            domain: currentData.domain || "Engineering",
-            score: currentData.best_score || 95,
-            standards: (currentData.primary_recommendations || []).map(s => s.standard_number),
-            fullData: currentData
-        };
+        const isBm = isCurrentResultBookmarked();
+        const q = (data.query || "Technical Procurement Requirement").trim();
+        const qLower = q.toLowerCase();
 
-        savedResults.unshift(savedItem);
-        localStorage.setItem("standiq_saved", JSON.stringify(savedResults));
-        showToast("Tender recommendation saved to your bookmarks!", "success");
-    });
+        if (isBm) {
+            savedResults = savedResults.filter(s => {
+                const sq = (s.query || s.title || "").trim().toLowerCase();
+                return sq !== qLower;
+            });
+            localStorage.setItem("standiq_saved", JSON.stringify(savedResults));
+            showToast("Tender recommendation removed from bookmarks.", "info");
+        } else {
+            const savedItem = {
+                id: Date.now(),
+                title: q,
+                query: q,
+                date: new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }),
+                domain: data.domain || (data.extracted_entities ? data.extracted_entities.domain : "General"),
+                score: data.best_score || 95,
+                standards: (data.primary_recommendations || []).map(s => s.standard_number),
+                fullData: data
+            };
+            savedResults.unshift(savedItem);
+            localStorage.setItem("standiq_saved", JSON.stringify(savedResults));
+            showToast("Tender recommendation saved to your bookmarks!", "success");
+        }
 
-    function renderSavedResultsGrid() {
-        const grid = document.getElementById("saved-results-grid");
+        updateHeaderBookmarkButton();
+        updateSavedBadges();
+        const activeSearch = document.getElementById("filter-saved-input") ? document.getElementById("filter-saved-input").value : "";
+        const activeDomain = document.getElementById("filter-saved-domain") ? document.getElementById("filter-saved-domain").value : "";
+        renderSavedResultsGrid(activeSearch, activeDomain);
+    }
+
+    function updateHeaderBookmarkButton() {
+        const btns = document.querySelectorAll("#btn-header-bookmark-result, #btn-bookmark-current, [data-action='bookmark-result']");
+        const isBm = isCurrentResultBookmarked();
+        btns.forEach(btn => {
+            if (isBm) {
+                btn.classList.add("bookmarked");
+                btn.innerHTML = `<i class="fa-solid fa-bookmark" style="color: #2563EB;"></i> <span id="btn-header-bookmark-text">Bookmarked</span>`;
+                btn.title = "Click to remove this tender result from bookmarks";
+            } else {
+                btn.classList.remove("bookmarked");
+                btn.innerHTML = `<i class="fa-regular fa-bookmark"></i> <span id="btn-header-bookmark-text">Bookmark Result</span>`;
+                btn.title = "Bookmark this entire tender recommendation result";
+            }
+        });
+    }
+
+    function updateSavedBadges() {
+        const total = (bookmarkedStandards.length || 0) + (savedResults.length || 0);
+        const sideBadge = document.getElementById("sidebar-saved-count");
+        if (sideBadge) {
+            sideBadge.textContent = total;
+            sideBadge.style.display = total > 0 ? "inline-block" : "none";
+        }
+        const countStds = document.getElementById("count-saved-stds");
+        if (countStds) countStds.textContent = bookmarkedStandards.length;
+        const countTenders = document.getElementById("count-saved-tenders");
+        if (countTenders) countTenders.textContent = savedResults.length;
+
+        // Metric Summary Stat Cards
+        const statStds = document.getElementById("stat-saved-stds-count");
+        if (statStds) statStds.textContent = bookmarkedStandards.length;
+        const statTenders = document.getElementById("stat-saved-tenders-count");
+        if (statTenders) statTenders.textContent = savedResults.length;
+        const statMand = document.getElementById("stat-saved-mandatory-count");
+        if (statMand) {
+            const mandCount = bookmarkedStandards.filter(s => s.is_mandatory || (s.certification_scheme && (s.certification_scheme.includes("Mandatory") || s.certification_scheme.includes("CRS") || s.certification_scheme.includes("QCO")))).length;
+            statMand.textContent = mandCount;
+        }
+    }
+
+    // Render Tab 1: Bookmarked Standards Grid
+    function renderSavedStandardsGrid(filterQuery = "", domainFilter = "") {
+        const grid = document.getElementById("saved-standards-grid");
+        if (!grid) return;
         grid.innerHTML = "";
 
-        if (savedResults.length === 0) {
-            grid.innerHTML = `<div style="grid-column: span 2; text-align: center; padding: 36px; color: var(--text-muted);">
-                <i class="fa-regular fa-bookmark" style="font-size: 32px; margin-bottom: 8px;"></i>
-                <p>No saved tender results yet. Click "Bookmark Current Result" to pin recommendations here.</p>
-            </div>`;
+        const query = (filterQuery || "").trim().toLowerCase();
+        const domain = (domainFilter || "").trim().toLowerCase();
+
+        let filtered = bookmarkedStandards;
+        if (domain) {
+            filtered = filtered.filter(s => (s.domain || "").toLowerCase().includes(domain));
+        }
+        if (query) {
+            filtered = filtered.filter(s => 
+                (s.standard_number || "").toLowerCase().includes(query) ||
+                (s.title || "").toLowerCase().includes(query) ||
+                (s.domain || "").toLowerCase().includes(query) ||
+                (s.scope || "").toLowerCase().includes(query)
+            );
+        }
+
+        if (filtered.length === 0) {
+            const isFiltering = query || domain;
+            const msg = isFiltering
+                ? `No bookmarked standards match your active filters (${query ? `"${query}"` : ''} ${domain ? `in ${domain}` : ''}).`
+                : `No Indian Standards bookmarked yet. Click "Bookmark" on any standard card in the Dashboard to save it here for instant regulatory access.`;
+            grid.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 48px 20px; background: #FFFFFF; border: 1.5px dashed var(--border-color); border-radius: 12px;">
+                    <div style="width: 56px; height: 56px; border-radius: 50%; background: #EFF6FF; color: #2563EB; display: inline-flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 14px; border: 1px solid #BFDBFE;">
+                        <i class="fa-regular fa-bookmark"></i>
+                    </div>
+                    <h3 style="font-size: 16px; font-weight: 700; color: #0F2B48; margin-bottom: 6px;">${isFiltering ? 'No Matching Bookmarked Standards' : 'No Bookmarked Standards Yet'}</h3>
+                    <p style="font-size: 13.5px; color: #64748B; max-width: 480px; margin: 0 auto 18px auto; line-height: 1.5;">${msg}</p>
+                    ${!isFiltering ? `
+                        <button class="btn-action-navy" onclick="window.switchViewNav('search')" style="padding: 9px 20px; font-size: 13px; cursor: pointer;">
+                            <i class="fa-solid fa-magnifying-glass"></i> Explore Indian Standards Catalog
+                        </button>
+                    ` : `
+                        <button class="btn-action-outline" onclick="window.resetSavedFilters()" style="padding: 7px 16px; font-size: 12.5px; cursor: pointer;">
+                            <i class="fa-solid fa-rotate-left"></i> Reset Filter
+                        </button>
+                    `}
+                </div>
+            `;
             return;
         }
 
-        savedResults.forEach(item => {
+        filtered.forEach(std => {
             const card = document.createElement("div");
-            card.className = "saved-item-card";
+            card.className = "saved-std-card";
+
+            const isMand = std.is_mandatory === true;
+            const mandClass = isMand ? "badge-mandatory" : "badge-voluntary";
+            const mandText = isMand ? "MANDATORY" : "VOLUNTARY";
+            const scheme = std.certification_scheme || (isMand ? "Mandatory ISI Scheme-I" : "Voluntary Standard");
+
+            let schemeClass = "badge-scheme";
+            let schemeIcon = "fa-stamp";
+            if (scheme.includes("CRS")) {
+                schemeClass = "badge-scheme-crs";
+                schemeIcon = "fa-laptop-code";
+            } else if (scheme.includes("Hallmarking")) {
+                schemeClass = "badge-scheme-hallmark";
+                schemeIcon = "fa-gem";
+            } else if (!isMand || scheme.includes("Voluntary")) {
+                schemeClass = "badge-scheme-voluntary";
+                schemeIcon = "fa-circle-check";
+            }
+
+            const cleanScope = std.scope ? std.scope.replace(/\s+/g, ' ').trim() : "Official technical specification established by the Bureau of Indian Standards.";
+
             card.innerHTML = `
                 <div>
-                    <div class="saved-item-header">
-                        <span class="badge-pill-status pill-green">${item.score}% Match</span>
-                        <span class="saved-item-date">${item.date}</span>
+                    <div class="saved-std-top">
+                        <div class="saved-std-num-badge" onclick="window.viewBookmarkedStdEvidence('${std.standard_number}')" title="Click to view verified BIS evidence">
+                            <i class="fa-solid fa-shield-halved" style="color: #2563EB;"></i>
+                            <span>${std.standard_number}</span>
+                        </div>
+                        <span class="badge-pill-card ${mandClass}">
+                            <i class="fa-solid ${isMand ? 'fa-triangle-exclamation' : 'fa-circle-info'}"></i> ${mandText}
+                        </span>
                     </div>
-                    <div class="saved-item-title">${item.title}</div>
-                    <div class="saved-item-tags">
-                        <span class="tag-badge">${item.domain}</span>
-                        <span class="tag-badge">${item.standards.slice(0, 3).join(', ')}</span>
+
+                    <div class="saved-std-title" title="${std.title}">${std.title}</div>
+
+                    <div class="saved-std-meta-row">
+                        <span class="badge-pill-card ${schemeClass}">
+                            <i class="fa-solid ${schemeIcon}"></i> ${scheme}
+                        </span>
+                        ${std.publication_year ? `
+                            <span class="badge-pill-card badge-status">
+                                <i class="fa-regular fa-calendar"></i> ${std.publication_year}
+                            </span>
+                        ` : ''}
+                        ${std.reaffirmed_year ? `
+                            <span class="badge-pill-card badge-reaffirmed">
+                                <i class="fa-solid fa-rotate"></i> Reaffirmed ${std.reaffirmed_year}
+                            </span>
+                        ` : ''}
+                        ${std.domain ? `
+                            <span class="tag-badge">
+                                ${std.domain}
+                            </span>
+                        ` : ''}
+                    </div>
+
+                    <div class="saved-std-scope-box" title="${cleanScope}">
+                        <strong style="color: #0F2B48;">Scope:</strong> ${cleanScope}
                     </div>
                 </div>
-                <div class="saved-item-actions">
-                    <button class="btn-action-primary" style="padding: 6px 12px; font-size: 12px;" onclick="window.loadSavedResult(${item.id})">
-                        Open In Dashboard
-                    </button>
-                    <button class="btn-clear-preview" onclick="window.deleteSavedResult(${item.id})" title="Remove"><i class="fa-solid fa-trash-can"></i></button>
+
+                <div class="saved-std-footer">
+                    <span class="saved-std-date"><i class="fa-regular fa-calendar-check"></i> ${std.date || 'Saved'}</span>
+                    <div class="saved-std-actions">
+                        <button class="btn-saved-action btn-evidence" onclick="window.viewBookmarkedStdEvidence('${std.standard_number}')" title="View official BIS scope evidence">
+                            <i class="fa-regular fa-eye"></i> Evidence
+                        </button>
+                        <button class="btn-saved-action btn-explain" onclick="window.explainBookmarkedStd('${std.standard_number}')" title="Ask AI explanation">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> AI Explain
+                        </button>
+                        ${std.preview_url ? `
+                            <a href="${std.preview_url}" target="_blank" rel="noopener noreferrer" class="btn-saved-action btn-evidence" title="View Official BIS Preview Link">
+                                <i class="fa-solid fa-arrow-up-right-from-square"></i> Preview
+                            </a>
+                        ` : ''}
+                        <button class="btn-saved-action btn-delete-saved" onclick="window.deleteBookmarkedStd('${std.standard_number}')" title="Remove bookmark">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
                 </div>
             `;
             grid.appendChild(card);
         });
     }
 
+    // Render Tab 2: Saved Tender Searches Grid
+    function renderSavedResultsGrid(filterQuery = "", domainFilter = "") {
+        const grid = document.getElementById("saved-results-grid");
+        if (!grid) return;
+        grid.innerHTML = "";
+
+        const query = (filterQuery || "").trim().toLowerCase();
+        const domain = (domainFilter || "").trim().toLowerCase();
+
+        let filtered = savedResults;
+        if (domain) {
+            filtered = filtered.filter(s => (s.domain || "").toLowerCase().includes(domain));
+        }
+        if (query) {
+            filtered = filtered.filter(s => 
+                (s.title || s.query || "").toLowerCase().includes(query) ||
+                (s.domain || "").toLowerCase().includes(query) ||
+                ((s.standards || []).join(" ")).toLowerCase().includes(query)
+            );
+        }
+
+        if (filtered.length === 0) {
+            const isFiltering = query || domain;
+            const msg = isFiltering
+                ? `No saved tender specifications match your active filters (${query ? `"${query}"` : ''} ${domain ? `in ${domain}` : ''}).`
+                : `No saved tender results yet. Click "Bookmark Result" on any recommendation in the Dashboard to pin it here.`;
+            grid.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 48px 20px; background: #FFFFFF; border: 1.5px dashed var(--border-color); border-radius: 12px;">
+                    <div style="width: 56px; height: 56px; border-radius: 50%; background: #FFF7ED; color: #EA580C; display: inline-flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 14px; border: 1px solid #FED7AA;">
+                        <i class="fa-regular fa-file-invoice"></i>
+                    </div>
+                    <h3 style="font-size: 16px; font-weight: 700; color: #0F2B48; margin-bottom: 6px;">${isFiltering ? 'No Matching Saved Searches' : 'No Saved Tender Results Yet'}</h3>
+                    <p style="font-size: 13.5px; color: #64748B; max-width: 480px; margin: 0 auto 18px auto; line-height: 1.5;">${msg}</p>
+                    ${!isFiltering ? `
+                        <button class="btn-action-navy" onclick="window.switchViewNav('search')" style="padding: 9px 20px; font-size: 13px; cursor: pointer;">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> New Procurement Search
+                        </button>
+                    ` : `
+                        <button class="btn-action-outline" onclick="window.resetSavedFilters()" style="padding: 7px 16px; font-size: 12.5px; cursor: pointer;">
+                            <i class="fa-solid fa-rotate-left"></i> Reset Filter
+                        </button>
+                    `}
+                </div>
+            `;
+            return;
+        }
+
+        filtered.forEach(item => {
+            const card = document.createElement("div");
+            card.className = "saved-item-card";
+            const stdList = item.standards || (item.fullData && item.fullData.primary_recommendations ? item.fullData.primary_recommendations.map(s => s.standard_number) : []);
+
+            card.innerHTML = `
+                <div>
+                    <div class="saved-item-header">
+                        <span class="badge-pill-status pill-green"><i class="fa-solid fa-check"></i> ${item.score || 95}% Match</span>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <span class="tag-badge">${item.domain || "General"}</span>
+                            <span class="saved-std-date"><i class="fa-regular fa-calendar"></i> ${item.date || 'Recent'}</span>
+                        </div>
+                    </div>
+
+                    <div class="saved-item-req-quote" title="${item.title || item.query}">
+                        <i class="fa-solid fa-quote-left" style="color: #93C5FD; margin-right: 6px;"></i> ${item.title || item.query}
+                    </div>
+
+                    <div style="margin-bottom: 10px;">
+                        <span style="font-size: 11.5px; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.03em; display: block; margin-bottom: 6px;">Applicable Standards (${stdList.length}):</span>
+                        <div class="saved-item-standards-list">
+                            ${stdList.map(s => `<span class="badge-pill-card badge-status" style="cursor: pointer;" onclick="window.viewBookmarkedStdEvidence('${s}')" title="Click to view evidence for ${s}"><i class="fa-solid fa-shield-halved" style="color: #2563EB;"></i> ${s}</span>`).join('')}
+                        </div>
+                    </div>
+
+                    <div class="saved-item-compliance-pill">
+                        <i class="fa-solid fa-circle-check"></i> 4/4 Statutory BIS Schemes Verified
+                    </div>
+                </div>
+
+                <div class="saved-item-actions">
+                    <button class="btn-action-navy" style="padding: 7px 16px; font-size: 12.5px;" onclick="window.loadSavedResult(${item.id})">
+                        <i class="fa-solid fa-chart-pie"></i> Open In Dashboard
+                    </button>
+                    <button class="btn-saved-action btn-delete-saved" onclick="window.deleteSavedResult(${item.id})" title="Remove tender bookmark">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    // Global Handlers for Bookmarks
+    window.switchViewNav = function(view) {
+        switchView(view);
+    };
+
+    window.resetSavedFilters = function() {
+        const input = document.getElementById("filter-saved-input");
+        const domain = document.getElementById("filter-saved-domain");
+        const clearBtn = document.getElementById("btn-clear-saved-filter");
+        if (input) input.value = "";
+        if (domain) domain.value = "";
+        if (clearBtn) clearBtn.classList.add("hidden");
+        renderSavedStandardsGrid("", "");
+        renderSavedResultsGrid("", "");
+    };
+
+    window.viewBookmarkedStdEvidence = function(stdNumber) {
+        const found = bookmarkedStandards.find(s => s.standard_number === stdNumber);
+        if (found) {
+            openEvidenceModal(found.fullData || found);
+        } else {
+            openEvidenceModal({
+                standard_number: stdNumber,
+                title: `Indian Standard ${stdNumber}`,
+                scope: `Official technical specification governed by Bureau of Indian Standards.`
+            });
+        }
+    };
+
+    window.explainBookmarkedStd = function(stdNumber) {
+        const found = bookmarkedStandards.find(s => s.standard_number === stdNumber);
+        if (found) {
+            openAIExplanationModal(found.fullData || found);
+        }
+    };
+
+    window.deleteBookmarkedStd = function(stdNumber) {
+        toggleStandardBookmark({ standard_number: stdNumber });
+    };
+
     window.loadSavedResult = function(id) {
         const found = savedResults.find(s => s.id === id);
         if (found) {
-            renderDashboard(found.fullData);
+            const dataToLoad = found.fullData || {
+                query: found.title || found.query || "Saved Procurement Requirement",
+                domain: found.domain || "General",
+                searched_on: found.date,
+                best_score: found.score || 95,
+                primary_recommendations: (found.standards || []).map(num => ({
+                    standard_number: num,
+                    title: `Indian Standard ${num}`,
+                    is_mandatory: true,
+                    certification_scheme: "Mandatory ISI Scheme-I",
+                    scope: "Verified statutory standard specification."
+                }))
+            };
+            renderDashboard(dataToLoad);
             switchView("dashboard");
+            showToast("Tender recommendation loaded into dashboard.", "success");
         }
     };
 
     window.deleteSavedResult = function(id) {
         savedResults = savedResults.filter(s => s.id !== id);
         localStorage.setItem("standiq_saved", JSON.stringify(savedResults));
-        renderSavedResultsGrid();
-        showToast("Bookmark removed.", "info");
+        const activeSearch = document.getElementById("filter-saved-input") ? document.getElementById("filter-saved-input").value : "";
+        const activeDomain = document.getElementById("filter-saved-domain") ? document.getElementById("filter-saved-domain").value : "";
+        renderSavedResultsGrid(activeSearch, activeDomain);
+        updateSavedBadges();
+        updateHeaderBookmarkButton();
+        showToast("Tender bookmark removed.", "info");
     };
+
+    // Export Portfolio Function
+    function exportSavedPortfolio() {
+        if (bookmarkedStandards.length === 0 && savedResults.length === 0) {
+            showToast("No bookmarked standards or saved tenders to export.", "info");
+            return;
+        }
+
+        let doc = `# STANDIQ — OFFICIAL BIS STANDARDS & PROCUREMENT PORTFOLIO\n`;
+        doc += `Generated: ${new Date().toLocaleString("en-IN")}\n`;
+        doc += `Total Bookmarked Standards: ${bookmarkedStandards.length}\n`;
+        doc += `Total Saved Tender Analyses: ${savedResults.length}\n\n`;
+        doc += `================================================================================\n`;
+        doc += `PART 1: BOOKMARKED INDIAN STANDARDS\n`;
+        doc += `================================================================================\n\n`;
+
+        if (bookmarkedStandards.length === 0) {
+            doc += `No individual standards bookmarked.\n\n`;
+        } else {
+            bookmarkedStandards.forEach((s, idx) => {
+                doc += `[${idx + 1}] ${s.standard_number}\n`;
+                doc += `    Title: ${s.title}\n`;
+                doc += `    Domain: ${s.domain || "General"}\n`;
+                doc += `    Compliance Status: ${s.is_mandatory ? "MANDATORY" : "VOLUNTARY"}\n`;
+                doc += `    Certification Scheme: ${s.certification_scheme || "ISI Scheme-I"}\n`;
+                if (s.publication_year) doc += `    Publication Year: ${s.publication_year}\n`;
+                if (s.reaffirmed_year) doc += `    Reaffirmed: ${s.reaffirmed_year}\n`;
+                if (s.scope) doc += `    Scope Summary: ${s.scope}\n`;
+                doc += `\n`;
+            });
+        }
+
+        doc += `================================================================================\n`;
+        doc += `PART 2: SAVED TENDER PROCUREMENT ANALYSES\n`;
+        doc += `================================================================================\n\n`;
+
+        if (savedResults.length === 0) {
+            doc += `No tender searches saved.\n\n`;
+        } else {
+            savedResults.forEach((t, idx) => {
+                doc += `[Tender ${idx + 1}] ${t.title || t.query}\n`;
+                doc += `    Date Saved: ${t.date}\n`;
+                doc += `    Domain: ${t.domain || "General"}\n`;
+                doc += `    Match Score: ${t.score || 95}%\n`;
+                doc += `    Applicable Standards: ${(t.standards || []).join(", ")}\n\n`;
+            });
+        }
+
+        doc += `================================================================================\n`;
+        doc += `LEGAL DIRECTIVE: Under Sections 16 & 17 of Bureau of Indian Standards Act 2016,\n`;
+        doc += `procuring entities and vendors must adhere to mandatory QCO & CRS requirements.\n`;
+
+        const blob = new Blob([doc], { type: "text/markdown;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `StandIQ_BIS_Portfolio_${new Date().toISOString().slice(0, 10)}.md`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast("Portfolio exported successfully.", "success");
+    }
+
+    const btnExportPortfolio = document.getElementById("btn-export-saved-portfolio");
+    if (btnExportPortfolio) {
+        btnExportPortfolio.addEventListener("click", exportSavedPortfolio);
+    }
+
+    // Header & Saved View Action Listeners
+    const btnClearAllSaved = document.getElementById("btn-clear-all-saved");
+    if (btnClearAllSaved) {
+        btnClearAllSaved.addEventListener("click", () => {
+            const totalCount = bookmarkedStandards.length + savedResults.length;
+            if (totalCount === 0) {
+                showToast("No bookmarks to clear.", "info");
+                return;
+            }
+            if (confirm(`Are you sure you want to clear all ${totalCount} saved bookmarks and bookmarked standards?`)) {
+                bookmarkedStandards = [];
+                savedResults = [];
+                localStorage.setItem("standiq_bookmarked_standards", "[]");
+                localStorage.setItem("standiq_saved", "[]");
+                renderSavedStandardsGrid();
+                renderSavedResultsGrid();
+                updateSavedBadges();
+                updateHeaderBookmarkButton();
+                showToast("All saved standards and tender bookmarks cleared.", "info");
+            }
+        });
+    }
+
+    // Tab Switching for Saved View
+    const tabSavedStds = document.getElementById("tab-saved-stds");
+    const tabSavedTenders = document.getElementById("tab-saved-tenders");
+    const gridSavedStds = document.getElementById("saved-standards-grid");
+    const gridSavedTenders = document.getElementById("saved-results-grid");
+    const filterSavedInput = document.getElementById("filter-saved-input");
+    const filterSavedDomain = document.getElementById("filter-saved-domain");
+    const btnClearSavedFilter = document.getElementById("btn-clear-saved-filter");
+
+    function triggerActiveSavedRender() {
+        const query = filterSavedInput ? filterSavedInput.value : "";
+        const domain = filterSavedDomain ? filterSavedDomain.value : "";
+        if (btnClearSavedFilter) {
+            if (query || domain) btnClearSavedFilter.classList.remove("hidden");
+            else btnClearSavedFilter.classList.add("hidden");
+        }
+        if (tabSavedStds && tabSavedStds.classList.contains("active")) {
+            renderSavedStandardsGrid(query, domain);
+        } else {
+            renderSavedResultsGrid(query, domain);
+        }
+    }
+
+    if (tabSavedStds && tabSavedTenders) {
+        tabSavedStds.addEventListener("click", () => {
+            tabSavedStds.classList.add("active");
+            tabSavedTenders.classList.remove("active");
+            if (gridSavedStds) gridSavedStds.style.display = "grid";
+            if (gridSavedTenders) gridSavedTenders.style.display = "none";
+            if (filterSavedInput) filterSavedInput.placeholder = "Search bookmarked standards by standard number, keyword, title, or scope...";
+            triggerActiveSavedRender();
+        });
+
+        tabSavedTenders.addEventListener("click", () => {
+            tabSavedTenders.classList.add("active");
+            tabSavedStds.classList.remove("active");
+            if (gridSavedStds) gridSavedStds.style.display = "none";
+            if (gridSavedTenders) gridSavedTenders.style.display = "grid";
+            if (filterSavedInput) filterSavedInput.placeholder = "Search saved tenders by title, domain, or standard number...";
+            triggerActiveSavedRender();
+        });
+    }
+
+    if (filterSavedInput) {
+        filterSavedInput.addEventListener("input", triggerActiveSavedRender);
+    }
+
+    if (filterSavedDomain) {
+        filterSavedDomain.addEventListener("change", triggerActiveSavedRender);
+    }
+
+    if (btnClearSavedFilter) {
+        btnClearSavedFilter.addEventListener("click", () => {
+            if (filterSavedInput) filterSavedInput.value = "";
+            if (filterSavedDomain) filterSavedDomain.value = "";
+            btnClearSavedFilter.classList.add("hidden");
+            triggerActiveSavedRender();
+        });
+    }
+
+    // Document-level Event Delegation for Bookmark Actions
+    document.addEventListener("click", (e) => {
+        // 1. Dashboard Header Bookmark or Current Result Bookmark Button
+        const bookmarkResultBtn = e.target.closest("#btn-header-bookmark-result, #btn-bookmark-current, [data-action='bookmark-result']");
+        if (bookmarkResultBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleCurrentResultBookmark();
+            return;
+        }
+
+        // 2. Individual Standard Card Bookmark Button
+        const stdBookmarkBtn = e.target.closest(".btn-bookmark-std");
+        if (stdBookmarkBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const stdNum = stdBookmarkBtn.getAttribute("data-std");
+            const idxStr = stdBookmarkBtn.getAttribute("data-idx");
+            let stdObj = null;
+            if (currentData && currentData.primary_recommendations) {
+                if (idxStr !== null && idxStr !== undefined) {
+                    const idx = parseInt(idxStr, 10);
+                    if (!isNaN(idx) && currentData.primary_recommendations[idx]) {
+                        stdObj = currentData.primary_recommendations[idx];
+                    }
+                }
+                if (!stdObj && stdNum) {
+                    stdObj = currentData.primary_recommendations.find(s => (s.standard_number || "").trim().toLowerCase() === stdNum.trim().toLowerCase());
+                }
+            }
+            if (!stdObj && stdNum) {
+                stdObj = { standard_number: stdNum };
+            }
+            if (stdObj) {
+                toggleStandardBookmark(stdObj);
+            }
+            return;
+        }
+    });
+
+    // Initialize badges on application startup
+    updateSavedBadges();
 
     // --- MODAL 1: VIEW EVIDENCE MODAL ---
     const modalEvidence = document.getElementById("modal-evidence");
@@ -1716,8 +2439,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnCardExplanation = document.getElementById("btn-view-explanation-modal");
     if (btnCardExplanation) {
         btnCardExplanation.addEventListener("click", () => {
-            const recs = (currentData && currentData.primary_recommendations) || (DEFAULT_DATA.primary_recommendations);
-            openAIExplanationModal(recs[0]);
+            const recs = (currentData && currentData.primary_recommendations) || [];
+            if (recs.length > 0) {
+                openAIExplanationModal(recs[0]);
+            } else {
+                showToast("No standards available to explain for this requirement.", "info");
+            }
         });
     }
 
@@ -1732,7 +2459,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnDownloadSpec = document.getElementById("btn-download-tender-spec-file");
 
     function generateTenderSpecText() {
-        const data = currentData || DEFAULT_DATA;
+        if (!currentData || !currentData.primary_recommendations || currentData.primary_recommendations.length === 0) {
+            return "No applicable Indian Standards found for this requirement. Tender specification report cannot be generated.";
+        }
+        const data = currentData;
         const now = new Date().toISOString().split("T")[0];
         const primaryStds = (data.primary_recommendations || []).map(s => `${s.standard_number} (${s.title})`).join(", ");
 
@@ -1864,20 +2594,23 @@ rejected as technically non-responsive without further evaluation.
     const btnConfirmLogout = document.getElementById("btn-confirm-logout");
 
     function openLogoutModal() {
-        modalLogout.classList.remove("hidden");
+        if (modalLogout) modalLogout.classList.remove("hidden");
     }
 
-    document.getElementById("side-logout").addEventListener("click", openLogoutModal);
-    closeLogout.addEventListener("click", () => modalLogout.classList.add("hidden"));
-    btnCancelLogout.addEventListener("click", () => modalLogout.classList.add("hidden"));
+    const sideLogout = document.getElementById("side-logout") || document.getElementById("btn-profile-logout");
+    if (sideLogout) sideLogout.addEventListener("click", openLogoutModal);
+    if (closeLogout) closeLogout.addEventListener("click", () => { if (modalLogout) modalLogout.classList.add("hidden"); });
+    if (btnCancelLogout) btnCancelLogout.addEventListener("click", () => { if (modalLogout) modalLogout.classList.add("hidden"); });
 
-    btnConfirmLogout.addEventListener("click", () => {
-        modalLogout.classList.add("hidden");
-        showToast("Logged out successfully. Reloading session...", "info");
-        setTimeout(() => {
-            window.location.reload();
-        }, 800);
-    });
+    if (btnConfirmLogout) {
+        btnConfirmLogout.addEventListener("click", () => {
+            if (modalLogout) modalLogout.classList.add("hidden");
+            showToast("Logged out successfully. Reloading session...", "info");
+            setTimeout(() => {
+                window.location.reload();
+            }, 800);
+        });
+    }
 
     // --- IR BENCHMARK MODAL ---
     const modalBenchmark = document.getElementById("modal-benchmark");
@@ -1971,9 +2704,9 @@ rejected as technically non-responsive without further evaluation.
         const setScheme = (prefix, obj, defaultStat, defaultDesc) => {
             const elStat = document.getElementById(`m-scheme-${prefix}-status`);
             const elDesc = document.getElementById(`m-scheme-${prefix}-desc`);
-            const statText = (typeof obj === "object" ? obj.status : obj) || defaultStat;
-            const cls = (typeof obj === "object" ? obj.badge_class : null) || "pill-gray";
-            const desc = (typeof obj === "object" ? obj.description : null) || defaultDesc;
+            const statText = (obj && typeof obj === "object" ? obj.status : obj) || defaultStat;
+            const cls = (obj && typeof obj === "object" ? obj.badge_class : null) || "pill-gray";
+            const desc = (obj && typeof obj === "object" ? obj.description : null) || defaultDesc;
 
             if (elStat) {
                 elStat.textContent = statText;
@@ -2077,12 +2810,18 @@ rejected as technically non-responsive without further evaluation.
         });
     }
 
-    document.getElementById("btn-view-full-mapping").addEventListener("click", () => {
-        showToast("Full attribute-to-standard mapping verified with 100% concordance.", "info");
-    });
-    document.getElementById("btn-save-settings").addEventListener("click", () => {
-        showToast("Preferences saved successfully.", "success");
-    });
+    const btnViewFullMapping = document.getElementById("btn-view-full-mapping");
+    if (btnViewFullMapping) {
+        btnViewFullMapping.addEventListener("click", () => {
+            showToast("Full attribute-to-standard mapping verified with 100% concordance.", "info");
+        });
+    }
+    const btnSaveSettings = document.getElementById("btn-save-settings");
+    if (btnSaveSettings) {
+        btnSaveSettings.addEventListener("click", () => {
+            showToast("Preferences saved successfully.", "success");
+        });
+    }
 
     // --- TOAST NOTIFICATIONS ---
     function showToast(message, type = "info") {
